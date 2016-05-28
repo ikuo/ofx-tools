@@ -5,14 +5,18 @@ import java.io._
 trait OfxGeneration {
   def apply(sink: PrintWriter): Unit
 
+  def apply(writer: Writer): Unit = {
+    val pw = new PrintWriter(writer)
+    try {
+      apply(pw)
+    } finally { pw.close() }
+  }
+
   def apply(): String = {
     val sw = new StringWriter()
     try {
-      val pw = new PrintWriter(sw)
-      try {
-        apply(pw)
-        pw.toString
-      } finally { pw.close() }
+      apply(sw)
+      sw.toString
     } finally { sw.close() }
   }
 }
