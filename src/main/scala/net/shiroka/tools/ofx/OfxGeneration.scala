@@ -29,4 +29,6 @@ trait OfxGeneration {
 
   def money(str: String, row: List[String]): BigDecimal =
     moneyOpt(str, row).getOrElse(sys.error(s"Failed to parse '$str' in row: $row"))
+
+  def noneIfEmpty(str: String): Option[String] = Option(str).map(_.trim).filter(_.nonEmpty)
 }

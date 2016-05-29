@@ -16,13 +16,14 @@ case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxG
       .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
       .foreach { csv =>
         try {
-          write(sink, csv.iterator.dropWhile(_ != header).drop(1))
+          read(sink, csv.iterator.dropWhile(_ != header).drop(1))
+            .foreach(sink.println)
         } finally (csv.close)
       }
 
-  private def write(sink: PrintWriter, rows: Iterator[Seq[String]]): Unit = {
+  private def read(sink: PrintWriter, rows: Iterator[Seq[String]]): Iterator[Transaction] = {
     var lastTxn: Option[Transaction] = None
-    rows.foreach(_.toList match {
+    rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
         val (_type, amount) =
           (moneyOpt(debitStr, row), moneyOpt(creditStr, row)) match {
@@ -36,13 +37,13 @@ case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxG
         val txn = Transaction(
           dateTime = DateTime.parse(s"$date +09:00", dateFormat),
           `type` = _type,
-          description = List(desc, inqNum).mkString(" #"),
+          description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
           amount = amount,
           balance = money(balanceStr, row)
         ).uniquifyTime(lastTxn.map(_.dateTime))
 
         lastTxn = Some(txn)
-        sink.println(row)
+        txn
       case row => sys.error(s"Malformed row: $row")
     })
   }
