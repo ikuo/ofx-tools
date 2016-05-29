@@ -7,9 +7,9 @@ import org.specs2.specification.Scope
 class ShinseiBankOfxGenerationSpec extends SpecificationLike {
   "ShinseiBankOfxGeneration" >> {
     "#apply" >> {
-      "it saves content" in {
-        val gen = ShinseiBankOfxGeneration(List(getClass.getResourceAsStream("shinsei.csv")))
-        gen() must be_==("dummy")
+      "it generates OFX statement" in {
+        val gen = ShinseiBankOfxGeneration(getClass.getResourceAsStream("/shinsei.txt"))
+        gen() must beNull.not
       }
     }
   }

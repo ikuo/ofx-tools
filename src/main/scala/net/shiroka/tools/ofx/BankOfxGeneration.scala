@@ -1,4 +1,3 @@
 package net.shiroka.tools.ofx
 
-trait BankOfxGeneration {
-}
+trait BankOfxGeneration extends OfxGeneration
