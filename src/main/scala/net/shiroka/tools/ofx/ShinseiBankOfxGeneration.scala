@@ -6,23 +6,26 @@ import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
 import Transaction._
+import Implicits.ReducePairs
 
 case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
   import ShinseiBankOfxGeneration._
 
   def apply(sources: List[InputStream], sinks: Option[String] => PrintStream): Unit =
     closing(sinks(Default)) { sink =>
-      sources
+      val (csvs, transactions) = sources
         .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
-        .foreach(closing(_) { csv =>
-          val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
-          Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
-            .writeOfx(sink)
-        })
+        .map(csv => (csv, read(csv.iterator.dropWhile(_ != header).drop(1))))
+        .reducePairs
+
+      closing(csvs)(_ =>
+        Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
+          .writeOfx(sink))
     }
 
   private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {
     var lastTxn: Option[Transaction] = None
+    val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
         val (_type, amount) =
@@ -50,7 +53,6 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 }
 
 object ShinseiBankOfxGeneration {
-  val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
 }
