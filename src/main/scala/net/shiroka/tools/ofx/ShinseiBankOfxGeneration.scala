@@ -34,7 +34,7 @@ case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxG
           }
 
         val txn = Transaction(
-          dateTime = DateTime.parse(date, dateFormat),
+          dateTime = DateTime.parse(s"$date +09:00", dateFormat),
           `type` = _type,
           description = List(desc, inqNum).mkString(" #"),
           amount = amount,
@@ -49,7 +49,7 @@ case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxG
 }
 
 object ShinseiBankOfxGeneration {
-  val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd")
+  val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
 
