@@ -8,11 +8,10 @@ class ShinseiBankOfxGenerationSpec extends SpecificationLike {
   "ShinseiBankOfxGeneration" >> {
     "#apply" >> {
       "it generates OFX statement" in {
-        val gen = ShinseiBankOfxGeneration(
-          6300215825L,
-          getClass.getResourceAsStream("/shinsei.txt")
-        )
-        gen(new FileOutputStream(new File("./out.ofx"))) must beNull.not
+        val gen = ShinseiBankOfxGeneration(6300215825L)
+        val src = getClass.getResourceAsStream("/shinsei.txt")
+        val sink = new FileOutputStream(new File("./out.ofx"))
+        gen(src, sink) must beNull.not
       }
     }
   }
