@@ -9,7 +9,7 @@ import Transaction._
 
 case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxGeneration {
   import ShinseiBankOfxGeneration._
-  require(sources.forall(_ != null), "sources contains null element")
+  require(sources.forall(_ != null), "sources contain null elements")
 
   def apply(sink: PrintWriter): Unit =
     sources
