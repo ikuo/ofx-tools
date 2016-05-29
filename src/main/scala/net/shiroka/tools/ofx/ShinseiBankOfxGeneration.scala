@@ -55,4 +55,8 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 object ShinseiBankOfxGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
+  def main(args: Array[String]) = args.toList match {
+    case accountNum :: src :: sink :: Nil => apply(accountNum.toLong)(src, sink)
+    case _ => throw new IllegalArgumentException(args.mkString)
+  }
 }

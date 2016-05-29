@@ -19,13 +19,21 @@ trait OfxGeneration {
 
   def apply(source: InputStream, sink: OutputStream): Unit = apply(List(source), sink)
 
-  def apply(sources: List[InputStream]): String = {
-    val out = new PrintStream(new ByteArrayOutputStream())
-    try {
-      apply(sources, out)
-      out.toString
-    } finally { out.close() }
-  }
+  def apply(sources: List[InputStream]): String =
+    closing(new ByteArrayOutputStream()) { os =>
+      closing(new PrintStream(os)) { out =>
+        apply(sources, out)
+        os.toString
+      }
+    }
+
+  def apply(source: InputStream): String = apply(List(source))
+
+  def apply(source: InputStream, sink: String): Unit =
+    closing(new FileOutputStream(new File(sink)))(apply(source, _))
+
+  def apply(source: String, sink: String): Unit =
+    closing(new FileInputStream(new File(source)))(apply(_, sink))
 
   def moneyOpt(str: String, row: List[String]): Option[BigDecimal] =
     try {
