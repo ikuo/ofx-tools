@@ -10,6 +10,7 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
   "net.sf.ofx4j" % "ofx4j" % "1.6",
   "com.github.tototoshi" %% "scala-csv" % "1.3.1",
+  "joda-time" % "joda-time" % "2.9.4",
   "org.specs2" %% "specs2-core" % "3.8.3" % "test"
 )
 
