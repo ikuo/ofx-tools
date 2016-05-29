@@ -7,21 +7,23 @@ import org.joda.time._
 import org.joda.time.format._
 import Transaction._
 
-case class ShinseiBankOfxGeneration(sources: List[InputStream]) extends BankOfxGeneration {
+case class ShinseiBankOfxGeneration(accountNumber: Long, sources: List[InputStream])
+    extends BankOfxGeneration {
   import ShinseiBankOfxGeneration._
   require(sources.forall(_ != null), "sources contain null elements")
 
-  def apply(sink: PrintWriter): Unit =
+  def apply(sink: PrintStream): Unit =
     sources
       .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
       .foreach { csv =>
         try {
-          read(sink, csv.iterator.dropWhile(_ != header).drop(1))
-            .foreach(sink.println)
+          val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
+          Statement(accountNumber, Statement.Savings, "JPY", transactions)
+            .writeOfx(sink)
         } finally (csv.close)
       }
 
-  private def read(sink: PrintWriter, rows: Iterator[Seq[String]]): Iterator[Transaction] = {
+  private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {
     var lastTxn: Option[Transaction] = None
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
@@ -54,5 +56,6 @@ object ShinseiBankOfxGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
 
-  def apply(source: InputStream): ShinseiBankOfxGeneration = apply(List(source))
+  def apply(accountNumber: Long, source: InputStream): ShinseiBankOfxGeneration =
+    apply(accountNumber, List(source))
 }

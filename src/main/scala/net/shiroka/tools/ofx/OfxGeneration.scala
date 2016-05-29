@@ -3,21 +3,14 @@ package net.shiroka.tools.ofx
 import java.io._
 
 trait OfxGeneration {
-  def apply(sink: PrintWriter): Unit
-
-  def apply(writer: Writer): Unit = {
-    val pw = new PrintWriter(writer)
-    try {
-      apply(pw)
-    } finally { pw.close() }
-  }
+  def apply(sink: PrintStream): Unit
 
   def apply(): String = {
-    val sw = new StringWriter()
+    val out = new PrintStream(new ByteArrayOutputStream())
     try {
-      apply(sw)
-      sw.toString
-    } finally { sw.close() }
+      apply(out)
+      out.toString
+    } finally { out.close() }
   }
 
   def moneyOpt(str: String, row: List[String]): Option[BigDecimal] =
