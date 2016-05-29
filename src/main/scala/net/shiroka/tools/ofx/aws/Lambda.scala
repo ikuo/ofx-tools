@@ -1,4 +1,4 @@
-package net.shiroka.tools.ofx
+package net.shiroka.tools.ofx.aws
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger

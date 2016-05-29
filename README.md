@@ -6,4 +6,4 @@
 sbt> assembly
 ```
 
-Upload the fat-jar and set `net.shiroka.tools.ofx.Lambda::handler` as an entry point.
+Upload the fat-jar and set `net.shiroka.tools.ofx.aws.Lambda::handler` as an entry point.
