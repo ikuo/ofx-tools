@@ -18,7 +18,7 @@ case class ShinseiBankOfxGeneration(accountNumber: Long, sources: List[InputStre
       .foreach { csv =>
         try {
           val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
-          Statement(accountNumber, Statement.Savings, "JPY", transactions)
+          Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
             .writeOfx(sink)
         } finally (csv.close)
       }

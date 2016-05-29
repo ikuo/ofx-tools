@@ -12,7 +12,7 @@ class ShinseiBankOfxGenerationSpec extends SpecificationLike {
           6300215825L,
           getClass.getResourceAsStream("/shinsei.txt")
         )
-        gen() must beNull.not
+        gen(new FileOutputStream(new File("./out.ofx"))) must beNull.not
       }
     }
   }

@@ -13,6 +13,12 @@ trait OfxGeneration {
     } finally { out.close() }
   }
 
+  def apply(sink: OutputStream): Unit = {
+    val out = new PrintStream(sink)
+    try { apply(out) }
+    finally { out.close }
+  }
+
   def moneyOpt(str: String, row: List[String]): Option[BigDecimal] =
     try {
       Option(str).map(_.trim).filter(_.nonEmpty).map(BigDecimal.apply)
