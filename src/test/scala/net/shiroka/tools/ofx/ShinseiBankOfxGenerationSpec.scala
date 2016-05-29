@@ -9,7 +9,7 @@ class ShinseiBankOfxGenerationSpec extends SpecificationLike {
     "#apply" >> {
       "it generates OFX statement" in {
         val generation = ShinseiBankOfxGeneration(6300215825L)
-        val src = getClass.getResourceAsStream("/shinsei.txt")
+        val src = getClass.getResourceAsStream("/shinsei-bank.txt")
         val result = generation(src)
         result must contain("<ACCTID>6300215825</ACCTID>")
         result must contain("<STMTTRN>")
