@@ -2,6 +2,7 @@ package net.shiroka.tools.ofx
 
 import java.io._
 import scala.io.Source
+import scala.util.control.Exception.catching
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
@@ -28,26 +29,28 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
     val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
-        val (_type, amount) =
-          (moneyOpt(debitStr, row), moneyOpt(creditStr, row)) match {
-            case (Some(debit), _) => (Debit, -debit)
-            case (_, Some(credit)) =>
-              val `type` = if (desc == "税引前利息") Interest else Deposit
-              (`type`, credit)
-            case _ => sys.error(s"Cannot find debit or credit in row: $row")
-          }
+        catching(classOf[Throwable]).either {
+          val (_type, amount) =
+            (moneyOpt(debitStr), moneyOpt(creditStr)) match {
+              case (Some(debit), _) => (Debit, -debit)
+              case (_, Some(credit)) =>
+                val `type` = if (desc == "税引前利息") Interest else Deposit
+                (`type`, credit)
+              case _ => sys.error("Cannot find debit or credit.")
+            }
 
-        val txn = Transaction(
-          dateTime = DateTime.parse(s"$date +09:00", dateFormat),
-          `type` = _type,
-          description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
-          amount = amount,
-          balance = money(balanceStr, row)
-        ).uniquifyTime(lastTxn.map(_.dateTime))
+          val txn = Transaction(
+            dateTime = DateTime.parse(s"$date +09:00", dateFormat),
+            `type` = _type,
+            description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
+            amount = amount,
+            balance = money(balanceStr)
+          ).uniquifyTime(lastTxn.map(_.dateTime))
 
-        lastTxn = Some(txn)
-        txn
-      case row => sys.error(s"Malformed row: $row")
+          lastTxn = Some(txn)
+          txn
+        }.fold(rethrow(_, s"Failed process row $row"), identity)
+      case row => sys.error(s"Malformed row $row")
     })
   }
 }

@@ -35,15 +35,14 @@ trait OfxGeneration {
   def apply(source: String, sink: String): Unit =
     closing(new FileInputStream(new File(source)))(apply(_, sink))
 
-  def moneyOpt(str: String, row: List[String]): Option[BigDecimal] =
+  def moneyOpt(str: String): Option[BigDecimal] =
     try {
       Option(str).map(_.trim).filter(_.nonEmpty).map(BigDecimal.apply)
     } catch {
-      case err: Throwable => throw new RuntimeException(s"Failed to parse $str in row $row")
+      case err: Throwable => rethrow(err, s"Failed to parse $str")
     }
 
-  def money(str: String, row: List[String]): BigDecimal =
-    moneyOpt(str, row).getOrElse(sys.error(s"Failed to parse '$str' in row: $row"))
+  def money(str: String): BigDecimal = moneyOpt(str).getOrElse(sys.error(s"Failed to parse '$str'"))
 
   def noneIfEmpty(str: String): Option[String] = Option(str).map(_.trim).filter(_.nonEmpty)
 
@@ -51,4 +50,6 @@ trait OfxGeneration {
 
   def closing[T <: Closeable, U](srcs: Iterable[T])(f: Iterable[T] => U) =
     try (f(srcs)) finally (srcs.map(_.close))
+
+  def rethrow(cause: Throwable, msg: String) = throw new RuntimeException(msg, cause)
 }
