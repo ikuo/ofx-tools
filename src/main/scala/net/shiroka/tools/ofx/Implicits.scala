@@ -1,6 +1,6 @@
 package net.shiroka.tools.ofx
 
-package object Implicits {
+object Implicits {
   implicit class ReducePairs[A](self: Iterable[(A, Iterator[Transaction])]) {
     val empty = (Nil: List[A], Iterator.apply[Transaction]())
 
