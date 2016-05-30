@@ -1,7 +1,6 @@
 package net.shiroka.tools.ofx.aws
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger
+import com.amazonaws.services.lambda.runtime.{ Context, LambdaLogger }
 
 class Lambda {
   def handler(count: Int, context: Context): String = {
