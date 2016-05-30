@@ -7,4 +7,8 @@ object Implicits {
     def reducePairs: (List[A], Iterator[Transaction]) =
       self.foldLeft(empty) { case ((csvs, iter), (csv, txns)) => (csv :: csvs, iter ++ txns) }
   }
+
+  implicit class Tapper[T](self: T) {
+    def tap[U](f: T => U): T = { f(self); self }
+  }
 }

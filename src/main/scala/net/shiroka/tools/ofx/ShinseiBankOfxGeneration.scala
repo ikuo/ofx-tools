@@ -7,7 +7,7 @@ import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
 import Transaction._
-import Implicits.ReducePairs
+import Implicits.{ ReducePairs, Tapper }
 
 case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
   import ShinseiBankOfxGeneration._
@@ -39,16 +39,15 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
               case _ => sys.error("Cannot find debit or credit.")
             }
 
-          val txn = Transaction(
+          Transaction(
             dateTime = DateTime.parse(s"$date +09:00", dateFormat),
             `type` = _type,
             description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
             amount = amount,
             balance = money(balanceStr)
           ).uniquifyTime(lastTxn.map(_.dateTime))
+            .tap(txn => lastTxn = Some(txn))
 
-          lastTxn = Some(txn)
-          txn
         }.fold(rethrow(_, s"Failed process row $row"), identity)
       case row => sys.error(s"Malformed row $row")
     })
