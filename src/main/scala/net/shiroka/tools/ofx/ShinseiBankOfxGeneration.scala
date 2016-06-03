@@ -30,15 +30,7 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
         catching(classOf[Throwable]).either {
-          val (_type, amount) =
-            (moneyOpt(debitStr), moneyOpt(creditStr)) match {
-              case (Some(debit), _) => (Debit, -debit)
-              case (_, Some(credit)) =>
-                val `type` = if (desc == "税引前利息") Interest else Deposit
-                (`type`, credit)
-              case _ => sys.error("Cannot find debit or credit.")
-            }
-
+          val (_type, amount) = typeAndAmount(debitStr, creditStr, desc)
           Transaction(
             dateTime = DateTime.parse(s"$date +09:00", dateFormat),
             `type` = _type,
@@ -47,11 +39,19 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
             balance = money(balanceStr)
           ).uniquifyTime(lastTxn.map(_.dateTime))
             .tap(txn => lastTxn = Some(txn))
-
         }.fold(rethrow(_, s"Failed process row $row"), identity)
       case row => sys.error(s"Malformed row $row")
     })
   }
+
+  private def typeAndAmount(debitStr: String, creditStr: String, desc: String): (Type, BigDecimal) =
+    (moneyOpt(debitStr), moneyOpt(creditStr)) match {
+      case (Some(debit), _) => (Debit, -debit)
+      case (_, Some(credit)) =>
+        val `type` = if (desc == "税引前利息") Interest else Deposit
+        (`type`, credit)
+      case _ => sys.error("Cannot find debit or credit.")
+    }
 }
 
 object ShinseiBankOfxGeneration {
