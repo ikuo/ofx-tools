@@ -1,5 +1,6 @@
 package net.shiroka.tools.ofx
 
+import scala.util.control.Exception.allCatch
 import java.io._
 
 trait OfxGeneration {
@@ -46,10 +47,10 @@ trait OfxGeneration {
 
   def noneIfEmpty(str: String): Option[String] = Option(str).map(_.trim).filter(_.nonEmpty)
 
-  def closing[T <: Closeable, U](src: T)(f: T => U) = try (f(src)) finally (src.close)
+  def closing[T <: Closeable, U](src: T)(f: T => U): U = try (f(src)) finally (allCatch.either(src.close))
 
-  def closing[T <: Closeable, U](srcs: Iterable[T])(f: Iterable[T] => U) =
-    try (f(srcs)) finally (srcs.map(_.close))
+  def closing[T <: Closeable, U](srcs: Iterable[T])(f: Iterable[T] => U): U =
+    try (f(srcs)) finally (srcs.map(src => allCatch.either(src.close)))
 
   def rethrow(cause: Throwable, msg: String) = throw new RuntimeException(msg, cause)
 }

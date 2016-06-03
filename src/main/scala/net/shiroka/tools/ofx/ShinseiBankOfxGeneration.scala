@@ -2,7 +2,7 @@ package net.shiroka.tools.ofx
 
 import java.io._
 import scala.io.Source
-import scala.util.control.Exception.catching
+import scala.util.control.Exception.allCatch
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
@@ -29,8 +29,9 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
     val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
-        catching(classOf[Throwable]).either {
+        allCatch.either {
           val (_type, amount) = typeAndAmount(debitStr, creditStr, desc)
+
           Transaction(
             dateTime = DateTime.parse(s"$date +09:00", dateFormat),
             `type` = _type,
@@ -39,6 +40,7 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
             balance = money(balanceStr)
           ).uniquifyTime(lastTxn.map(_.dateTime))
             .tap(txn => lastTxn = Some(txn))
+
         }.fold(rethrow(_, s"Failed process row $row"), identity)
       case row => sys.error(s"Malformed row $row")
     })
