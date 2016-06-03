@@ -3,9 +3,9 @@ package net.shiroka.tools.ofx.aws
 import com.amazonaws.services.lambda.runtime.{ Context, LambdaLogger }
 
 class Lambda {
-  def handler(count: Int, context: Context): String = {
+  def handler(uri: String, context: Context): String = {
     val lambdaLogger: LambdaLogger = context.getLogger()
-    lambdaLogger.log("count = " + count)
-    String.valueOf(count)
+    lambdaLogger.log("uri = " + uri)
+    uri
   }
 }
