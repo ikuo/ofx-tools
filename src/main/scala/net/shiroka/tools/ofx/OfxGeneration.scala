@@ -1,6 +1,5 @@
 package net.shiroka.tools.ofx
 
-import scala.util.control.Exception.allCatch
 import java.io._
 
 trait OfxGeneration {
@@ -12,13 +11,7 @@ trait OfxGeneration {
 
   def apply(source: InputStream, sink: PrintStream): Unit = apply(List(source), sink)
 
-  def apply(sources: List[InputStream], sink: OutputStream): Unit = {
-    val out = new PrintStream(sink)
-    try { apply(sources, out) }
-    finally { out.close }
-  }
-
-  def apply(source: InputStream, sink: OutputStream): Unit = apply(List(source), sink)
+  def apply(source: InputStream, sink: OutputStream): Unit = apply(List(source), new PrintStream(sink))
 
   def apply(sources: List[InputStream]): String =
     closing(new ByteArrayOutputStream()) { os =>
@@ -44,13 +37,4 @@ trait OfxGeneration {
     }
 
   def money(str: String): BigDecimal = moneyOpt(str).getOrElse(sys.error(s"Failed to parse '$str'"))
-
-  def noneIfEmpty(str: String): Option[String] = Option(str).map(_.trim).filter(_.nonEmpty)
-
-  def closing[T <: Closeable, U](src: T)(f: T => U): U = try (f(src)) finally (allCatch.either(src.close))
-
-  def closing[T <: Closeable, U](srcs: Iterable[T])(f: Iterable[T] => U): U =
-    try (f(srcs)) finally (srcs.map(src => allCatch.either(src.close)))
-
-  def rethrow(cause: Throwable, msg: String) = throw new RuntimeException(msg, cause)
 }
