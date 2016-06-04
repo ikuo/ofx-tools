@@ -3,11 +3,22 @@ proguardSettings
 ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings")
 
 ProguardKeys.options in Proguard += """
+-dontoptimize
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
--keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
--keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
--keepnames public class com.amazonaws.services.lambda.runtime.Context
+-keepnames public class ** { *; }
+-keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -keep public class org.apache.commons.logging.impl.LogFactoryImpl
+-keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
+-keep public class com.amazonaws.internal.config.*Json* {
+  public *** <init>(...);
+  public void set*(***);
+  public *** get*();
+}
+-keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
+-keepclassmembers enum * {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
 """
 
 ProguardKeys.merge in Proguard := true
