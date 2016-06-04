@@ -59,29 +59,39 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 object ShinseiBankOfxGeneration {
   import com.amazonaws.regions._
   import com.amazonaws.services.s3.AmazonS3Client
+  import com.amazonaws.services.s3.model._
   import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-  import com.netaporter.uri.Uri.parse
+  import com.netaporter.uri.Uri
   import com.typesafe.config.ConfigFactory
   import Implicits.Tapper
 
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
 
-  def main(args: Array[String]) = args.toList match {
-    case s3uri :: "-" :: Nil =>
-      val awsConfig = ConfigFactory.load(getClass.getClassLoader)
-      val region = awsConfig.getString("net.shiroka.tools.ofx.aws.region")
-      val uri = parse(s3uri)
-      val generation =
-        uri.pathParts.takeRight(3).map(_.part).toList match {
-          case "shinsei-bank" :: accountNum :: fileName :: Nil =>
-            val client: AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
-              .tap(_.setRegion(RegionUtils.getRegion(region)))
-            val obj = client.getObject(uri.host.get, uri.pathParts.map(_.part).mkString("/"))
-            apply(accountNum.toLong)(obj.getObjectContent, System.out)
+  val awsConfig = ConfigFactory.load(getClass.getClassLoader)
+  val region = awsConfig.getString("net.shiroka.tools.ofx.aws.region")
 
-          case parts => sys.error(s"Unexpected path parts $parts")
-        }
+  def source(uri: Uri): S3ObjectInputStream = {
+    val client: AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
+      .tap(_.setRegion(RegionUtils.getRegion(region)))
+    val obj = client.getObject(uri.host.get, uri.path.drop(1))
+    obj.getObjectContent
+  }
+
+  def generate(uri: Uri, sink: OutputStream): Unit = {
+    val generation =
+      uri.pathParts.takeRight(3).map(_.part).toList match {
+        case "shinsei-bank" :: accountNum :: fileName :: Nil =>
+          apply(accountNum.toLong)(source(uri), sink)
+        case parts => sys.error(s"Unexpected path parts $parts")
+      }
+  }
+
+  def main(args: Array[String]) = args.toList match {
+    case s3uri :: "-" :: Nil => generate(Uri.parse(s3uri), System.out)
+    case s3uri :: Nil =>
+      val uri = Uri.parse(s3uri)
+      generate(uri, System.out)
 
     case accountNum :: src :: sink :: Nil => apply(accountNum.toLong)(src, sink)
     case _ => throw new IllegalArgumentException(args.mkString)
