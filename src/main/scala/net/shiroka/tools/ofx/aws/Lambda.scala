@@ -1,7 +1,7 @@
 package net.shiroka.tools.ofx.aws
 
 import java.io._
-import com.amazonaws.regions.Regions
+import com.amazonaws.regions._
 import com.amazonaws.services.lambda.runtime.{ Context, LambdaLogger }
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
@@ -28,7 +28,7 @@ class Lambda {
       }
 
     val client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
-    //.withRegion(Regions.valueOf(awsConfig.getString("region")))
+      .setRegion(RegionUtils.getRegion(awsConfig.getString("region")))
 
     val src: InputStream = ???
     val sink: PrintStream = ???
