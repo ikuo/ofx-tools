@@ -2,10 +2,11 @@ package net.shiroka.tools.ofx
 
 import java.io._
 import scala.io.Source
-import scala.util.control.Exception.{ catching, allCatch }
+import scala.util.control.Exception.allCatch
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
+import net.shiroka.tools.ofx.aws.S3
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
@@ -57,33 +58,18 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 }
 
 object ShinseiBankOfxGeneration {
-  import com.amazonaws.regions._
-  import com.amazonaws.services.s3.AmazonS3Client
   import com.amazonaws.services.s3.model._
-  import com.amazonaws.services.s3.transfer._
-  import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
   import com.netaporter.uri.Uri
-  import com.typesafe.config.ConfigFactory
   import Implicits.Tapper
 
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
-
-  val awsConfig = ConfigFactory.load(getClass.getClassLoader)
-  val region = awsConfig.getString("net.shiroka.tools.ofx.aws.region")
-
-  def getClient: AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
-    .tap(_.setRegion(RegionUtils.getRegion(region)))
-
-  def source(uri: Uri): S3ObjectInputStream = {
-    val obj = getClient.getObject(uri.host.get, uri.path.drop(1))
-    obj.getObjectContent
-  }
+  val s3 = S3()
 
   def generate[T](uri: Uri)(f: (OfxGeneration, S3ObjectInputStream) => T): T = {
     uri.pathParts.takeRight(3).map(_.part).toList match {
       case "shinsei-bank" :: accountNum :: fileName :: Nil =>
-        closing(source(uri))(f(apply(accountNum.toLong), _))
+        closing(s3.source(uri))(f(apply(accountNum.toLong), _))
       case parts => sys.error(s"Unexpected path parts $parts")
     }
   }
@@ -97,16 +83,12 @@ object ShinseiBankOfxGeneration {
       val baos: ByteArrayOutputStream =
         generate(Uri.parse(s3uri))((gen, src) => new ByteArrayOutputStream().tap(os => gen.apply(src, os)))
 
-      new TransferManager(getClient).tap { transfer =>
-        catching(classOf[InterruptedException]).either {
-          transfer.upload(
-            uri.host.get,
-            uri.path.drop(1).stripSuffix(".txt") ++ ".ofx",
-            new ByteArrayInputStream(baos.toByteArray),
-            new ObjectMetadata().tap(_.setContentLength(baos.size))
-          ).waitForCompletion
-        }.fold(err => throw new IOException(err), identity)
-      }.shutdownNow()
+      s3.uploadAndAwait(
+        bucket = uri.host.get,
+        key = uri.path.drop(1).stripSuffix(".txt") ++ ".ofx",
+        is = new ByteArrayInputStream(baos.toByteArray),
+        size = baos.size
+      )
 
     case accountNum :: src :: sink :: Nil => apply(accountNum.toLong)(src, sink)
     case _ => throw new IllegalArgumentException(args.mkString)
