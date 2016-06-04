@@ -1,4 +1,8 @@
+import com.typesafe.sbt.SbtProguard.ProguardKeys._
+
 proguardSettings
+
+javaOptions in (Proguard, proguard) := Seq("-Xmx4G")
 
 ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings")
 
@@ -9,16 +13,7 @@ ProguardKeys.options in Proguard += """
 -keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -keep public class org.apache.commons.logging.impl.LogFactoryImpl
 -keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
--keep public class com.amazonaws.internal.config.*Json* {
-  public *** <init>(...);
-  public void set*(***);
-  public *** get*();
-}
 -keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
--keepclassmembers enum * {
-  public static **[] values();
-  public static ** valueOf(java.lang.String);
-}
 """
 
 ProguardKeys.merge in Proguard := true
