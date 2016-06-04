@@ -28,7 +28,7 @@ class Lambda {
       }
 
     val client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
-      .withRegion(Regions.valueOf(awsConfig.getString("region")))
+    //.withRegion(Regions.valueOf(awsConfig.getString("region")))
 
     val src: InputStream = ???
     val sink: PrintStream = ???
