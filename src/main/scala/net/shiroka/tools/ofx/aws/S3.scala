@@ -10,6 +10,7 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.netaporter.uri.Uri
 import com.typesafe.config.ConfigFactory
 import net.shiroka.tools.ofx.Implicits.Tapper
+import net.shiroka.tools.ofx._
 
 case class S3() {
   val awsConfig = ConfigFactory.load(getClass.getClassLoader)
@@ -23,7 +24,17 @@ case class S3() {
     obj.getObjectContent
   }
 
-  def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int) =
+  def uploadAndAwait(generation: OfxGeneration, src: InputStream, originalUri: Uri): Unit =
+    closing(new ByteArrayOutputStream().tap(out => generation.apply(src, out))) { baos =>
+      uploadAndAwait(
+        bucket = originalUri.host.get,
+        key = originalUri.path.drop(1).stripSuffix(".txt") ++ ".ofx",
+        is = new ByteArrayInputStream(baos.toByteArray),
+        size = baos.size
+      )
+    }
+
+  def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int): Unit =
     new TransferManager(getClient).tap { transfer =>
       catching(classOf[InterruptedException]).either {
         transfer.upload(

@@ -6,7 +6,6 @@ import scala.util.control.Exception.allCatch
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
-import net.shiroka.tools.ofx.aws.S3
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
@@ -58,39 +57,9 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 }
 
 object ShinseiBankOfxGeneration {
-  import com.amazonaws.services.s3.model._
-  import com.netaporter.uri.Uri
-  import Implicits.Tapper
-
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
-  val s3 = S3()
+  val cli = AccountNumberCli("shinsei-bank", apply)
 
-  def generate[T](uri: Uri)(f: (OfxGeneration, S3ObjectInputStream) => T): T = {
-    uri.pathParts.takeRight(3).map(_.part).toList match {
-      case "shinsei-bank" :: accountNum :: fileName :: Nil =>
-        closing(s3.source(uri))(f(apply(accountNum.toLong), _))
-      case parts => sys.error(s"Unexpected path parts $parts")
-    }
-  }
-
-  def main(args: Array[String]): Unit = args.toList match {
-    case s3uri :: "-" :: Nil =>
-      generate(Uri.parse(s3uri))((gen, src) => gen.apply(src, System.out))
-
-    case s3uri :: Nil =>
-      val uri = Uri.parse(s3uri)
-      val baos: ByteArrayOutputStream =
-        generate(Uri.parse(s3uri))((gen, src) => new ByteArrayOutputStream().tap(os => gen.apply(src, os)))
-
-      s3.uploadAndAwait(
-        bucket = uri.host.get,
-        key = uri.path.drop(1).stripSuffix(".txt") ++ ".ofx",
-        is = new ByteArrayInputStream(baos.toByteArray),
-        size = baos.size
-      )
-
-    case accountNum :: src :: sink :: Nil => apply(accountNum.toLong)(src, sink)
-    case _ => throw new IllegalArgumentException(args.mkString)
-  }
+  def main(args: Array[String]): Unit = cli.handleArgs.applyOrElse(args.toList, cli.illegalArgs)
 }
