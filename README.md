@@ -22,3 +22,10 @@ sbt> proguard:proguard
 ```
 
 Upload the generated jar and set `net.shiroka.tools.ofx.aws.Lambda::handler` as an entry point.
+
+Optionally, thest the jar as follows:
+
+```
+java -classpath ofx-tools_2.11-0.1.0-SNAPSHOT.jar \
+  net.shiroka.tools.ofx.ShinseiBankOfxGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.txt -
+```
