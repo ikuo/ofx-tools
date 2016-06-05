@@ -1,14 +1,29 @@
 package net.shiroka.tools.ofx.aws
 
 import java.io._
+import scala.util.control.Exception.allCatch
 import com.amazonaws.services.lambda.runtime.{ Context, LambdaLogger }
-import net.shiroka.tools.ofx.ShinseiBankGeneration
+import com.typesafe.config.ConfigFactory
+import com.netaporter.uri.Uri
+import net.shiroka.tools.ofx._
 
 class Lambda {
-  def handler(uri: String, context: Context): String = {
+  val config = ConfigFactory.load().getConfig("net.shiroka.tools.ofx.aws")
+  val prefix = config.getString("s3.path.prefix")
+  val generations = Map[String, String => Unit](
+    "shinsei-bank" -> (uri => ShinseiBankGeneration.main(Array(uri)))
+  )
+
+  def handler(uri: String, context: Context): Unit = {
     val lambdaLogger: LambdaLogger = context.getLogger()
     lambdaLogger.log("Processing URI: " + uri)
-    ShinseiBankGeneration.main(Array(uri))
-    uri
+
+    val name =
+      allCatch.either(Uri.parse(uri).path.stripPrefix(prefix).takeWhile(_ != '/'))
+        .fold(rethrow(_, s"Cannot get generation name from uri $uri"), identity)
+
+    generations
+      .getOrElse(name, throw new IllegalArgumentException(s"Unknown generation name '$name'"))
+      .apply(uri)
   }
 }
