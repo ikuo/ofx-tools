@@ -2,7 +2,7 @@ name := "ofx-tools"
 
 organization := "net.shiroka"
 
-version := "1.0.0"
+version := "1.0.1-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
