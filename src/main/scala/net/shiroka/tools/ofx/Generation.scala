@@ -2,7 +2,7 @@ package net.shiroka.tools.ofx
 
 import java.io._
 
-trait OfxGeneration {
+trait Generation {
   val Default: Option[String] = None
 
   def apply(sources: List[InputStream], sinks: (Option[String]) => PrintStream): Unit

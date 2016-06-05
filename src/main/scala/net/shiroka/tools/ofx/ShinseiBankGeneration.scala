@@ -9,8 +9,8 @@ import org.joda.time.format._
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
-case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
-  import ShinseiBankOfxGeneration._
+case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
+  import ShinseiBankGeneration._
 
   def apply(sources: List[InputStream], sinks: Option[String] => PrintStream): Unit = {
     val sink = sinks(Default)
@@ -56,10 +56,11 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
     }
 }
 
-object ShinseiBankOfxGeneration {
+object ShinseiBankGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
-  val cli = AccountNumberCli("shinsei-bank", apply)
+  val name = "shinsei-bank"
+  val cli = AccountNumberCli(name, apply)
 
   def main(args: Array[String]): Unit = cli.handleArgs.applyOrElse(args.toList, cli.illegalArgs)
 }
