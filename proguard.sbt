@@ -9,14 +9,17 @@ ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarni
 ProguardKeys.options in Proguard += """
 -dontoptimize
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
--keepnames public class ** { *; }
+-keepnames class ** { *; }
+-keepnames enum ** { *; }
+-keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+
 -keep public enum com.amazonaws.RequestClientOptions$Marker** {
     **[] $VALUES;
     public *;
 }
--keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -keep public class org.apache.commons.logging.impl.LogFactoryImpl
 -keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
+
 -keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
 """
 
