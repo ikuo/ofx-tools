@@ -9,7 +9,7 @@ $ sbt runMain net.shiroka.tools.ofx.<class-name> <account-number> <input-file> <
 Example:
 
 ```
-$ sbt runMain net.shiroka.tools.ofx.ShinseiBankOfxGeneration 6300215825 src/test/resources/shinsei-bank.txt target/out.ofx
+$ sbt runMain net.shiroka.tools.ofx.ShinseiBankOfxGeneration 1001111111 src/test/resources/shinsei-bank.txt target/out.ofx
 ```
 
 ## Deploying to AWS Lambda
@@ -26,6 +26,6 @@ Upload the generated jar and set `net.shiroka.tools.ofx.aws.Lambda::handler` as 
 Optionally, thest the jar as follows:
 
 ```
-java -classpath ofx-tools_2.11-0.1.0-SNAPSHOT.jar \
+java -classpath ofx-tools_2.11-1.0-SNAPSHOT.jar \
   net.shiroka.tools.ofx.ShinseiBankOfxGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.txt -
 ```
