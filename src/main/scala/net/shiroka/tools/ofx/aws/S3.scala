@@ -14,13 +14,12 @@ import net.shiroka.tools.ofx._
 case class S3() {
   val awsConfig = ConfigFactory.load(getClass.getClassLoader)
   val region = awsConfig.getString("net.shiroka.tools.ofx.aws.region")
-
-  def getClient: AmazonS3Client =
+  lazy val client: AmazonS3Client =
     new AmazonS3Client(getCredentials)
       .tap(_.setRegion(RegionUtils.getRegion(region)))
 
   def source(uri: Uri): S3ObjectInputStream = {
-    val obj = getClient.getObject(uri.host.get, uri.path.drop(1))
+    val obj = client.getObject(uri.host.get, uri.path.drop(1))
     obj.getObjectContent
   }
 
@@ -34,15 +33,15 @@ case class S3() {
       )
     }
 
-  def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int): Unit =
-    new TransferManager(getClient).tap { transfer =>
-      catching(classOf[InterruptedException]).either {
-        transfer.upload(
-          bucket,
-          key,
-          is,
-          new ObjectMetadata().tap(_.setContentLength(size))
-        ).waitForCompletion
-      }.fold(err => throw new IOException(err), identity)
-    }.shutdownNow()
+  def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int): Unit = {
+    val transfer = new TransferManager(client)
+    val upload = transfer.upload(
+      bucket,
+      key,
+      is,
+      new ObjectMetadata().tap(_.setContentLength(size))
+    )
+    upload.waitForCompletion
+    transfer.shutdownNow()
+  }
 }
