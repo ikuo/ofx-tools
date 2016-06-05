@@ -6,7 +6,6 @@ import com.amazonaws.regions._
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.transfer._
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.netaporter.uri.Uri
 import com.typesafe.config.ConfigFactory
 import net.shiroka.tools.ofx.Implicits.Tapper
@@ -16,8 +15,9 @@ case class S3() {
   val awsConfig = ConfigFactory.load(getClass.getClassLoader)
   val region = awsConfig.getString("net.shiroka.tools.ofx.aws.region")
 
-  def getClient: AmazonS3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain())
-    .tap(_.setRegion(RegionUtils.getRegion(region)))
+  def getClient: AmazonS3Client =
+    new AmazonS3Client(getCredentials)
+      .tap(_.setRegion(RegionUtils.getRegion(region)))
 
   def source(uri: Uri): S3ObjectInputStream = {
     val obj = getClient.getObject(uri.host.get, uri.path.drop(1))
