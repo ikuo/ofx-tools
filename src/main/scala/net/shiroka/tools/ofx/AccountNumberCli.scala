@@ -8,7 +8,7 @@ case class AccountNumberCli[T <: Generation](
     institutionKey: String,
     makeGeneration: Long => T,
     sourceFileSuffix: String
-) extends Cli {
+) {
   val s3 = S3()
 
   def generate[T](uri: Uri)(f: (Generation, S3ObjectInputStream) => T): T = {

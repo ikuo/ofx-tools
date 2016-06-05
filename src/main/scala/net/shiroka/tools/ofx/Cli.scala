@@ -1,5 +1,5 @@
 package net.shiroka.tools.ofx
 
-trait Cli {
+object Cli {
   def illegalArgs(args: List[String]) = throw new IllegalArgumentException(args.mkString)
 }
