@@ -1,5 +1,7 @@
 # ofx-tools
 
+Utilities to generate [OFX](http://www.ofx.net/) files.
+
 ## Running in CLI
 
 ```
@@ -9,7 +11,7 @@ $ sbt runMain net.shiroka.tools.ofx.<class-name> <account-number> <input-file> <
 Example:
 
 ```
-$ sbt runMain net.shiroka.tools.ofx.ShinseiBankOfxGeneration 1001111111 src/test/resources/shinsei-bank.txt target/out.ofx
+$ sbt runMain net.shiroka.tools.ofx.ShinseiBankGeneration 1001111111 src/test/resources/shinsei-bank.txt target/out.ofx
 ```
 
 ## Deploying to AWS Lambda
@@ -26,9 +28,9 @@ Upload the generated jar and set `net.shiroka.tools.ofx.aws.Lambda::handler` as 
 Optionally, test the jar as follows:
 
 ```
-java -classpath ofx-tools_2.11-1.0-SNAPSHOT.jar \
-  net.shiroka.tools.ofx.ShinseiBankOfxGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.txt -
+java -classpath target/scala-2.11/proguard/ofx-tools_2.11-<version>.jar \
+  net.shiroka.tools.ofx.ShinseiBankGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.txt -
 ```
 
-Then set up src/main/javascript/dispatch-s3-events.js as another Lambda function to extract S3 path
+Then set up [dispatch-s3-events.js](src/main/javascript/dispatch-s3-events.js) as another Lambda function to extract S3 path
 and pass it to the main Lambda function above.
