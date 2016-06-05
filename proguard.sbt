@@ -17,6 +17,10 @@ ProguardKeys.options in Proguard += """
     **[] $VALUES;
     public *;
 }
+-keep class com.amazonaws.metrics.AwsSdkMetrics$* {
+  *** <init>(...);
+  *** *;
+}
 -keep public class org.apache.commons.logging.impl.LogFactoryImpl
 -keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
 
