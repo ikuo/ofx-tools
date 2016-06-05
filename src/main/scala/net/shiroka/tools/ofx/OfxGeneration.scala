@@ -11,11 +11,12 @@ trait OfxGeneration {
 
   def apply(source: InputStream, sink: PrintStream): Unit = apply(List(source), sink)
 
-  def apply(source: InputStream, sink: OutputStream): Unit = apply(List(source), new PrintStream(sink))
+  def apply(source: InputStream, sink: OutputStream): Unit =
+    apply(List(source), new PrintStream(sink, true, "UTF-8"))
 
   def apply(sources: List[InputStream]): String =
     closing(new ByteArrayOutputStream()) { os =>
-      closing(new PrintStream(os)) { out =>
+      closing(new PrintStream(os, true, "UTF-8")) { out =>
         apply(sources, out)
         os.toString
       }
