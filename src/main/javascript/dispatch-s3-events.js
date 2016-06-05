@@ -17,9 +17,10 @@ exports.handler = (event, context, callback) => {
     console.log(`Dispatching ${uri} to ${targetFunction}`);
     new aws.Lambda().invoke({
         FunctionName: targetFunction,
-        Payload: `"${uri}"`
+        Payload: `"${uri}"`,
+        InvocationType: 'Event'
     }).promise().then((data) => {
-        console.log(`Got result from ${targetFunction}: ${JSON.stringify(data)}`);
+        console.log(`Invoked ${targetFunction} with result ${JSON.stringify(data)}`);
         callback(null, uri);
     });
 };
