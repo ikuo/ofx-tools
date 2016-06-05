@@ -4,8 +4,11 @@ import com.amazonaws.services.s3.model._
 import com.netaporter.uri.Uri
 import net.shiroka.tools.ofx.aws.S3
 
-case class AccountNumberCli[T <: Generation](institutionKey: String, makeGeneration: Long => T)
-    extends Cli {
+case class AccountNumberCli[T <: Generation](
+    institutionKey: String,
+    makeGeneration: Long => T,
+    sourceFileSuffix: String
+) extends Cli {
   val s3 = S3()
 
   def generate[T](uri: Uri)(f: (Generation, S3ObjectInputStream) => T): T = {
@@ -22,7 +25,7 @@ case class AccountNumberCli[T <: Generation](institutionKey: String, makeGenerat
 
     case s3uri :: Nil =>
       val uri = Uri.parse(s3uri)
-      generate(uri)((gen, src) => s3.uploadAndAwait(gen, src, uri))
+      generate(uri)((gen, src) => s3.uploadAndAwait(gen, src, uri, sourceFileSuffix))
 
     case accountNum :: src :: sink :: Nil => makeGeneration(accountNum.toLong)(src, sink)
   }

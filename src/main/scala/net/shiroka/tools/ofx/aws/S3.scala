@@ -24,11 +24,11 @@ case class S3() {
     obj.getObjectContent
   }
 
-  def uploadAndAwait(generation: Generation, src: InputStream, originalUri: Uri): Unit =
+  def uploadAndAwait(generation: Generation, src: InputStream, originalUri: Uri, suffix: String): Unit =
     closing(new ByteArrayOutputStream().tap(out => generation.apply(src, out))) { baos =>
       uploadAndAwait(
         bucket = originalUri.host.get,
-        key = originalUri.path.drop(1).stripSuffix(".txt") ++ ".ofx",
+        key = originalUri.path.drop(1).stripSuffix(suffix) ++ "ofx",
         is = new ByteArrayInputStream(baos.toByteArray),
         size = baos.size
       )

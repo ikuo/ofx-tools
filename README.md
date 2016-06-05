@@ -11,7 +11,7 @@ $ sbt runMain net.shiroka.tools.ofx.<class-name> <account-number> <input-file> <
 Example:
 
 ```
-$ sbt runMain net.shiroka.tools.ofx.ShinseiBankGeneration 1001111111 src/test/resources/shinsei-bank.txt target/out.ofx
+$ sbt runMain net.shiroka.tools.ofx.ShinseiBankGeneration 1001111111 src/test/resources/shinsei-bank.csv target/out.ofx
 ```
 
 ## Deploying to AWS Lambda
@@ -29,7 +29,7 @@ Optionally, test the jar as follows:
 
 ```
 java -classpath target/scala-2.11/proguard/ofx-tools_2.11-<version>.jar \
-  net.shiroka.tools.ofx.ShinseiBankGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.txt -
+  net.shiroka.tools.ofx.ShinseiBankGeneration s3://mybucket/reports/shinsei-bank/1001111111/1.csv -
 ```
 
 Then set up [dispatch-s3-events.js](src/main/javascript/dispatch-s3-events.js) as another Lambda function to extract S3 path
