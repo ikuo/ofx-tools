@@ -12,17 +12,17 @@ import Implicits.{ ReducePairs, Tapper }
 case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
   import ShinseiBankOfxGeneration._
 
-  def apply(sources: List[InputStream], sinks: Option[String] => PrintStream): Unit =
-    closing(sinks(Default)) { sink =>
-      val (csvs, transactions) = sources
-        .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
-        .map(csv => (csv, read(csv.iterator.dropWhile(_ != header).drop(1))))
-        .reducePairs
+  def apply(sources: List[InputStream], sinks: Option[String] => PrintStream): Unit = {
+    val sink = sinks(Default)
+    val (csvs, transactions) = sources
+      .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
+      .map(csv => (csv, read(csv.iterator.dropWhile(_ != header).drop(1))))
+      .reducePairs
 
-      closing(csvs)(_ =>
-        Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
-          .writeOfx(sink))
-    }
+    closing(csvs)(_ =>
+      Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
+        .writeOfx(sink))
+  }
 
   private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {
     var lastTxn: Option[Transaction] = None
@@ -59,8 +59,7 @@ case class ShinseiBankOfxGeneration(accountNumber: Long) extends OfxGeneration {
 object ShinseiBankOfxGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
-  def main(args: Array[String]) = args.toList match {
-    case accountNum :: src :: sink :: Nil => apply(accountNum.toLong)(src, sink)
-    case _ => throw new IllegalArgumentException(args.mkString)
-  }
+  val cli = AccountNumberCli("shinsei-bank", apply)
+
+  def main(args: Array[String]): Unit = cli.handleArgs.applyOrElse(args.toList, cli.illegalArgs)
 }

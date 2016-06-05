@@ -10,6 +10,10 @@ ProguardKeys.options in Proguard += """
 -dontoptimize
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
 -keepnames public class ** { *; }
+-keep public enum com.amazonaws.RequestClientOptions$Marker** {
+    **[] $VALUES;
+    public *;
+}
 -keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -keep public class org.apache.commons.logging.impl.LogFactoryImpl
 -keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
@@ -21,5 +25,7 @@ ProguardKeys.merge in Proguard := true
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r)
 
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.append("reference.conf")
+
+ProguardKeys.options in Proguard += ProguardOptions.keepMain("net.shiroka.tools.ofx.*")
 
 scalacOptions += "-target:jvm-1.7"

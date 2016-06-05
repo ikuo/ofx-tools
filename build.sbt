@@ -20,3 +20,5 @@ libraryDependencies ++=
   )
 
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+fork in run := true
