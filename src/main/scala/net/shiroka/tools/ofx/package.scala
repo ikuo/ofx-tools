@@ -14,7 +14,8 @@ package object ofx {
   def rethrow(cause: Throwable, msg: String) = throw new RuntimeException(msg, cause)
 
   def closeAll(closeables: List[Closeable]) =
-    closeables.map(io => ignoring(classOf[IOException])(io.close))
+    for (io <- closeables if io != System.out)
+      ignoring(classOf[IOException])(io.close)
 
   def printToBaos[T](f: PrintStream => T): ByteArrayOutputStream =
     closing(new ByteArrayOutputStream) { baos =>
