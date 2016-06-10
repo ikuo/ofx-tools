@@ -15,9 +15,7 @@ case class AccountNumberCli[T <: Generation](
     val pathParts = uri.pathParts.takeRight(3).map(_.part).toList
     pathParts match {
       case `institutionKey` :: accountNum :: fileName :: Nil =>
-        closing(s3.source(uri)) { src =>
-          makeGeneration(accountNum.toLong)(List(src), _: Option[String] => PrintStream)
-        }
+        makeGeneration(accountNum.toLong)(List(s3.source(uri)), _: Option[String] => PrintStream)
 
       case parts => sys.error(s"Unexpected path parts $parts")
     }
@@ -26,15 +24,15 @@ case class AccountNumberCli[T <: Generation](
   def apply(args: Array[String]) = args.toList match {
     case s3uri :: "-" :: Nil =>
       val uri = Uri.parse(s3uri)
-      ofxGenerationWithSrc(uri)(_ => System.out)
+      ofxGenerationWithSrc(uri)(_ => System.out).tap(closeAll)
 
     case s3uri :: Nil =>
       val uri = Uri.parse(s3uri)
-      printToBaos(out => ofxGenerationWithSrc(uri)(_ => out))
+      printToBaos(out => ofxGenerationWithSrc(uri)(_ => out).tap(closeAll))
         .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
 
     case accountNum :: src :: sink :: Nil =>
-      makeGeneration(accountNum.toLong)(src, sink)
+      makeGeneration(accountNum.toLong)(src, sink).tap(closeAll)
 
     case _ => throw new IllegalArgumentException(args.mkString)
   }

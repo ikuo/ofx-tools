@@ -13,7 +13,10 @@ import Implicits.{ ReducePairs, Tapper }
 case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
   import ShinseiBankGeneration._
 
-  def apply(sources: List[InputStream], sinks: Option[String] => PrintStream): Unit = {
+  def apply(
+    sources: List[InputStream],
+    sinks: Option[String] => PrintStream
+  ): Result = {
     val sink = sinks(Default)
     val (csvs, transactions) = sources
       .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
@@ -23,6 +26,8 @@ case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
     closing(csvs)(_ =>
       Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
         .writeOfx(sink))
+
+    sink :: sources
   }
 
   private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {
