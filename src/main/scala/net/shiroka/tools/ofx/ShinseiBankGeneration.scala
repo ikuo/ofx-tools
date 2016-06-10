@@ -61,8 +61,6 @@ object ShinseiBankGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
   val name = "shinsei-bank"
-  def cli = AccountNumberCli(name, apply, "csv", S3())
 
-  def main(args: Array[String]): Unit =
-    cli.handleArgs.applyOrElse(args.toList, Cli.illegalArgs)
+  def main(args: Array[String]): Unit = AccountNumberCli(name, apply, "csv", S3())(args)
 }

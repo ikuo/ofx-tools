@@ -23,7 +23,7 @@ case class AccountNumberCli[T <: Generation](
     }
   }
 
-  val handleArgs: PartialFunction[List[String], Unit] = {
+  def apply(args: Array[String]) = args.toList match {
     case s3uri :: "-" :: Nil =>
       val uri = Uri.parse(s3uri)
       ofxGenerationWithSrc(uri)(_ => System.out)
@@ -33,6 +33,9 @@ case class AccountNumberCli[T <: Generation](
       printToBaos(out => ofxGenerationWithSrc(uri)(_ => out))
         .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
 
-    case accountNum :: src :: sink :: Nil => makeGeneration(accountNum.toLong)(src, sink)
+    case accountNum :: src :: sink :: Nil =>
+      makeGeneration(accountNum.toLong)(src, sink)
+
+    case _ => throw new IllegalArgumentException(args.mkString)
   }
 }
