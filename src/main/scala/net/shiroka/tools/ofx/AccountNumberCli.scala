@@ -1,32 +1,41 @@
 package net.shiroka.tools.ofx
 
-import com.amazonaws.services.s3.model._
+import java.io._
 import com.netaporter.uri.Uri
 import net.shiroka.tools.ofx.aws.S3
+import Implicits.Tapper
 
 case class AccountNumberCli[T <: Generation](
     institutionKey: String,
     makeGeneration: Long => T,
-    sourceFileSuffix: String
+    sourceFileSuffix: String,
+    s3: S3
 ) {
-  val s3 = S3()
-
-  def generate[T](uri: Uri)(f: (Generation, S3ObjectInputStream) => T): T = {
-    uri.pathParts.takeRight(3).map(_.part).toList match {
+  def ofxGenerationWithSrc[T](uri: Uri) = {
+    val pathParts = uri.pathParts.takeRight(3).map(_.part).toList
+    pathParts match {
       case `institutionKey` :: accountNum :: fileName :: Nil =>
-        closing(s3.source(uri))(f(makeGeneration(accountNum.toLong), _))
+        closing(s3.source(uri)) { src =>
+          makeGeneration(accountNum.toLong)(List(src), _: Option[String] => PrintStream)
+        }
+
       case parts => sys.error(s"Unexpected path parts $parts")
     }
   }
 
-  val handleArgs: PartialFunction[List[String], Unit] = {
+  def apply(args: Array[String]) = args.toList match {
     case s3uri :: "-" :: Nil =>
-      generate(Uri.parse(s3uri))((gen, src) => gen.apply(src, System.out))
+      val uri = Uri.parse(s3uri)
+      ofxGenerationWithSrc(uri)(_ => System.out)
 
     case s3uri :: Nil =>
       val uri = Uri.parse(s3uri)
-      generate(uri)((gen, src) => s3.uploadAndAwait(gen, src, uri, sourceFileSuffix))
+      printToBaos(out => ofxGenerationWithSrc(uri)(_ => out))
+        .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
 
-    case accountNum :: src :: sink :: Nil => makeGeneration(accountNum.toLong)(src, sink)
+    case accountNum :: src :: sink :: Nil =>
+      makeGeneration(accountNum.toLong)(src, sink)
+
+    case _ => throw new IllegalArgumentException(args.mkString)
   }
 }
