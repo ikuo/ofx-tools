@@ -6,6 +6,7 @@ import scala.util.control.Exception.allCatch
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
+import net.shiroka.tools.ofx.aws.S3
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
@@ -60,7 +61,8 @@ object ShinseiBankGeneration {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
   val name = "shinsei-bank"
-  def cli = AccountNumberCli(name, apply, "csv")
+  def cli = AccountNumberCli(name, apply, "csv", S3())
 
-  def main(args: Array[String]): Unit = cli.handleArgs.applyOrElse(args.toList, Cli.illegalArgs)
+  def main(args: Array[String]): Unit =
+    cli.handleArgs.applyOrElse(args.toList, Cli.illegalArgs)
 }

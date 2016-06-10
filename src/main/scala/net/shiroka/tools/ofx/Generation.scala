@@ -15,12 +15,7 @@ trait Generation {
     apply(List(source), new PrintStream(sink, true, "UTF-8"))
 
   def apply(sources: List[InputStream]): String =
-    closing(new ByteArrayOutputStream()) { os =>
-      closing(new PrintStream(os, true, "UTF-8")) { out =>
-        apply(sources, out)
-        os.toString
-      }
-    }
+    printToBaos(out => apply(sources, out)).toString
 
   def apply(source: InputStream): String = apply(List(source))
 

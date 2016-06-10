@@ -12,4 +12,12 @@ package object ofx {
     try (f(srcs)) finally (srcs.map(src => allCatch.either(src.close)))
 
   def rethrow(cause: Throwable, msg: String) = throw new RuntimeException(msg, cause)
+
+  def printToBaos[T](f: PrintStream => T): ByteArrayOutputStream =
+    closing(new ByteArrayOutputStream) { baos =>
+      closing(new PrintStream(baos, true, "UTF-8")) { out =>
+        f(out)
+        baos
+      }
+    }
 }

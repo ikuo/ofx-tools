@@ -34,6 +34,14 @@ case class S3() {
       )
     }
 
+  def uploadAndAwait(originalUri: Uri, suffix: String, baos: ByteArrayOutputStream): Unit =
+    uploadAndAwait(
+      bucket = originalUri.host.get,
+      key = originalUri.path.drop(1).stripSuffix(suffix) ++ "ofx",
+      is = new ByteArrayInputStream(baos.toByteArray),
+      size = baos.size
+    )
+
   def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int): Unit =
     new TransferManager(client).tap { transfer =>
       catching(classOf[InterruptedException]).either {
