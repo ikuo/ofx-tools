@@ -51,15 +51,8 @@ object Conversion {
   ) {
     lazy val sourceFileSuffix = conversion.config.getString("source-file-suffix")
 
-    def conversionWithSrc[T](uri: Uri) = {
-      val pathParts = uri.pathParts.takeRight(3).map(_.part).toList
-      pathParts match {
-        case `conversionName` :: fileName :: Nil =>
-          conversion(List(s3.source(uri)), _: Option[String] => PrintStream)
-
-        case parts => sys.error(s"Unexpected path parts $parts")
-      }
-    }
+    def conversionWithSrc[T](uri: Uri) =
+      conversion(List(s3.source(uri)), _: Option[String] => PrintStream)
 
     def apply(args: List[String]) = args match {
       case s3uri :: "-" :: Nil =>
