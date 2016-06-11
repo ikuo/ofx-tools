@@ -11,7 +11,7 @@ case class AccountNumberCli[T <: Conversion](
     sourceFileSuffix: String,
     s3: S3
 ) {
-  def ofxConversionWithSrc[T](uri: Uri) = {
+  def conversionWithSrc[T](uri: Uri) = {
     val pathParts = uri.pathParts.takeRight(3).map(_.part).toList
     pathParts match {
       case `institutionKey` :: accountNum :: fileName :: Nil =>
@@ -24,11 +24,11 @@ case class AccountNumberCli[T <: Conversion](
   def apply(args: Array[String]) = args.toList match {
     case s3uri :: "-" :: Nil =>
       val uri = Uri.parse(s3uri)
-      ofxConversionWithSrc(uri)(_ => System.out).tap(closeAll)
+      conversionWithSrc(uri)(_ => System.out).tap(closeAll)
 
     case s3uri :: Nil =>
       val uri = Uri.parse(s3uri)
-      printToBaos(out => ofxConversionWithSrc(uri)(_ => out).tap(closeAll))
+      printToBaos(out => conversionWithSrc(uri)(_ => out).tap(closeAll))
         .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
 
     case accountNum :: src :: sink :: Nil =>
