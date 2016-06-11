@@ -10,7 +10,7 @@ import net.shiroka.tools.ofx._
 class Lambda {
   val config = ConfigFactory.load().getConfig("net.shiroka.tools.ofx.aws")
   val prefix = config.getString("s3.path.prefix")
-  val generations = Map[String, String => Unit](
+  val conversions = Map[String, String => Unit](
     "shinsei-bank" -> (uri => ShinseiBankConversion.main(Array(uri)))
   )
 
@@ -20,10 +20,10 @@ class Lambda {
 
     val name =
       allCatch.either(Uri.parse(uri).path.stripPrefix(prefix).takeWhile(_ != '/'))
-        .fold(rethrow(_, s"Cannot get generation name from uri $uri"), identity)
+        .fold(rethrow(_, s"Cannot get conversion name from uri $uri"), identity)
 
-    generations
-      .getOrElse(name, throw new IllegalArgumentException(s"Unknown generation name '$name'"))
+    conversions
+      .getOrElse(name, throw new IllegalArgumentException(s"Unknown conversion name '$name'"))
       .apply(uri)
   }
 }
