@@ -1,9 +1,14 @@
 package net.shiroka.tools.ofx
 
 import java.io._
+import com.typesafe.config.Config
+import com.netaporter.uri.Uri
+import net.shiroka.tools.ofx.aws.S3
+import Implicits.Tapper
 
-trait Generation {
+trait Conversion {
   type Result = List[Closeable]
+  val config: Config
   val Default: Option[String] = None
 
   def apply(sources: List[InputStream], sinks: (Option[String]) => PrintStream): Result
@@ -36,4 +41,33 @@ trait Generation {
     }
 
   def money(str: String): BigDecimal = moneyOpt(str).getOrElse(sys.error(s"Failed to parse '$str'"))
+}
+
+object Conversion {
+  case class Cli[T <: Conversion](
+      conversionName: String,
+      conversion: Conversion,
+      s3: S3
+  ) {
+    lazy val sourceFileSuffix = conversion.config.getString("source-file-suffix")
+
+    def conversionWithSrc[T](uri: Uri) =
+      conversion(List(s3.source(uri)), _: Option[String] => PrintStream)
+
+    def apply(args: List[String]) = args match {
+      case s3uri :: "-" :: Nil =>
+        val uri = Uri.parse(s3uri)
+        conversionWithSrc(uri)(_ => System.out).tap(closeAll)
+
+      case s3uri :: Nil =>
+        val uri = Uri.parse(s3uri)
+        printToBaos(out => conversionWithSrc(uri)(_ => out).tap(closeAll))
+          .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
+
+      case src :: sink :: Nil =>
+        conversion(src, sink).tap(closeAll)
+
+      case _ => throw new IllegalArgumentException(args.mkString)
+    }
+  }
 }

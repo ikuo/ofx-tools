@@ -6,12 +6,14 @@ import scala.util.control.Exception.allCatch
 import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
+import com.typesafe.config.Config
 import net.shiroka.tools.ofx.aws.S3
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
-case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
-  import ShinseiBankGeneration._
+case class ShinseiBankConversion(config: Config) extends Conversion {
+  import ShinseiBankConversion._
+  lazy val accountNumber = config.getLong("account-number")
 
   def apply(
     sources: List[InputStream],
@@ -62,10 +64,7 @@ case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
     }
 }
 
-object ShinseiBankGeneration {
+object ShinseiBankConversion {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
-  val name = "shinsei-bank"
-
-  def main(args: Array[String]): Unit = AccountNumberCli(name, apply, "csv", S3())(args)
 }
