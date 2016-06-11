@@ -10,9 +10,6 @@ import net.shiroka.tools.ofx._
 class Lambda {
   val config = ConfigFactory.load().getConfig("net.shiroka.tools.ofx.aws")
   val prefix = config.getString("s3.path.prefix")
-  val conversions = Map[String, String => Unit](
-    "shinsei-bank" -> (uri => ShinseiBankConversion.main(Array(uri)))
-  )
 
   def handler(uri: String, context: Context): Unit = {
     val lambdaLogger: LambdaLogger = context.getLogger()
@@ -22,8 +19,6 @@ class Lambda {
       allCatch.either(Uri.parse(uri).path.stripPrefix(prefix).takeWhile(_ != '/'))
         .fold(rethrow(_, s"Cannot get conversion name from uri $uri"), identity)
 
-    conversions
-      .getOrElse(name, throw new IllegalArgumentException(s"Unknown conversion name '$name'"))
-      .apply(uri)
+    Main.main(Array("convert", name, uri))
   }
 }

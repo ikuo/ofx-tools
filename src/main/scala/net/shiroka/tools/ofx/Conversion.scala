@@ -1,9 +1,11 @@
 package net.shiroka.tools.ofx
 
 import java.io._
+import com.typesafe.config.Config
 
 trait Conversion {
   type Result = List[Closeable]
+  val config: Config
   val Default: Option[String] = None
 
   def apply(sources: List[InputStream], sinks: (Option[String]) => PrintStream): Result
