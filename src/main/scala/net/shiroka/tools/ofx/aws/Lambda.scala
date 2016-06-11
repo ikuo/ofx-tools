@@ -19,6 +19,6 @@ class Lambda {
       allCatch.either(Uri.parse(uri).path.stripPrefix(prefix).takeWhile(_ != '/'))
         .fold(rethrow(_, s"Cannot get conversion name from uri $uri"), identity)
 
-    Main.main(Array("convert", name, uri))
+    Cli.main(Array("convert", name, uri))
   }
 }
