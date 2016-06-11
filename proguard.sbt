@@ -25,6 +25,7 @@ ProguardKeys.options in Proguard += """
 -keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
 
 -keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
+-keep public class ** extends net.shiroka.tools.ofx.Conversion { *; }
 """
 
 ProguardKeys.merge in Proguard := true
