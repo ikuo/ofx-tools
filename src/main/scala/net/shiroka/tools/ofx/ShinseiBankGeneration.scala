@@ -10,8 +10,8 @@ import net.shiroka.tools.ofx.aws.S3
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
-case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
-  import ShinseiBankGeneration._
+case class ShinseiBankConversion(accountNumber: Long) extends Conversion {
+  import ShinseiBankConversion._
 
   def apply(
     sources: List[InputStream],
@@ -62,7 +62,7 @@ case class ShinseiBankGeneration(accountNumber: Long) extends Generation {
     }
 }
 
-object ShinseiBankGeneration {
+object ShinseiBankConversion {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
   val name = "shinsei-bank"

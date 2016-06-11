@@ -2,7 +2,7 @@ package net.shiroka.tools.ofx
 
 import java.io._
 
-trait Generation {
+trait Conversion {
   type Result = List[Closeable]
   val Default: Option[String] = None
 

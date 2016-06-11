@@ -11,7 +11,7 @@ class Lambda {
   val config = ConfigFactory.load().getConfig("net.shiroka.tools.ofx.aws")
   val prefix = config.getString("s3.path.prefix")
   val generations = Map[String, String => Unit](
-    "shinsei-bank" -> (uri => ShinseiBankGeneration.main(Array(uri)))
+    "shinsei-bank" -> (uri => ShinseiBankConversion.main(Array(uri)))
   )
 
   def handler(uri: String, context: Context): Unit = {
