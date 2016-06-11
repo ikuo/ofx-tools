@@ -13,7 +13,7 @@ class ShinseiBankConversionSpec extends SpecificationLike {
         val conversion = ShinseiBankConversion(config)
         val src = getClass.getResourceAsStream("/shinsei-bank.csv")
         val result = printToBaos(out => conversion(src, out)).toString
-        result must contain("<ACCTID>1001000100</ACCTID>")
+        result must contain("<ACCTID>1001000200</ACCTID>")
         result must contain("<STMTTRN>")
       }
     }
