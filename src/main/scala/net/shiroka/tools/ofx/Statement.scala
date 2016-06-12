@@ -6,12 +6,12 @@ import net.ceedubs.ficus.Ficus._
 import Statement._
 
 case class Statement(
-    accountNumber: Long,
+    accountId: String,
     accountType: AccountType,
     currencyCode: String,
     transactions: Iterator[Transaction] // assume descending order by date time
 ) {
-  lazy val ofxKeyPrefix = accountNumber.toString
+  lazy val ofxKeyPrefix = accountId.toString
 
   def wrap: Message = Message(List(this))
 
@@ -23,7 +23,7 @@ case class Statement(
         <CURDEF>$currencyCode</CURDEF>
         <BANKACCTFROM>
           <BANKID/>
-          <ACCTID>$accountNumber</ACCTID>
+          <ACCTID>$accountId</ACCTID>
           <ACCTTYPE>${accountType.name}</ACCTTYPE>
         </BANKACCTFROM>
         <BANKTRANLIST>""")

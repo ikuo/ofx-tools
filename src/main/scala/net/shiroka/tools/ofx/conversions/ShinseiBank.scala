@@ -14,7 +14,7 @@ import Implicits.Tapper
 
 case class ShinseiBank(config: Config) extends Conversion {
   import ShinseiBank._
-  lazy val accountNumber = config.getLong("account-number")
+  lazy val accountId = config.getString("account-id")
 
   def apply(
     source: InputStream,
@@ -24,7 +24,7 @@ case class ShinseiBank(config: Config) extends Conversion {
     lazy val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
 
     closing(csv)(_ =>
-      Statement(accountNumber, Statement.Savings, "JPY", transactions)
+      Statement(accountId, Statement.Savings, "JPY", transactions)
         .wrap
         .writeOfx(sink))
 

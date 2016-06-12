@@ -60,7 +60,7 @@ case class Freee(config: Config) extends Conversion {
     transactionGroups.map {
       case (name, transactions) =>
         Statement(
-          accounts.as[Option[Long]](s"$name.account-number").getOrElse(Math.abs(name.hashCode.toLong)),
+          accounts.as[Option[String]](s"$name.account-id").getOrElse(name),
           accTypes(name),
           currencyCode,
           transactions.iterator
@@ -75,7 +75,7 @@ case class Freee(config: Config) extends Conversion {
 
   private def typeAndAmount(accType: AccountType, amountStr: String) =
     (accType, money(amountStr)) match {
-      case (`CreditLine`, amount) => (Credit, amount)
+      case (`CreditLine`, amount) => (Credit, -amount)
       case (_, amount) => (Debit, -amount)
     }
 }
