@@ -60,9 +60,6 @@ object Statement {
   object AccountType {
     val byName = Map(List(Savings, Checking, MoneyMarket, CreditLine).map(t => t.name -> t): _*)
     def find(config: Config, name: String): Option[AccountType] =
-      for {
-        tp <- config.as[Option[String]](s"accounts.$name.type")
-        accType <- byName.get(tp)
-      } yield accType
+      config.as[Option[String]](s"$name.type").flatMap(byName.get)
   }
 }

@@ -60,7 +60,7 @@ case class Freee(config: Config) extends Conversion {
     transactionGroups.map {
       case (name, transactions) =>
         Statement(
-          config.as[Option[Long]](s"$name.account-number").getOrElse(name.hashCode.toLong),
+          accounts.as[Option[Long]](s"$name.account-number").getOrElse(Math.abs(name.hashCode.toLong)),
           accTypes(name),
           currencyCode,
           transactions.iterator
@@ -69,7 +69,7 @@ case class Freee(config: Config) extends Conversion {
   }
 
   private def findOrGuess(name: String): AccountType =
-    AccountType.find(config, name)
+    AccountType.find(accounts, name)
       .orElse(if (name.endsWith("カード")) Some(CreditLine) else None)
       .getOrElse(Savings)
 
