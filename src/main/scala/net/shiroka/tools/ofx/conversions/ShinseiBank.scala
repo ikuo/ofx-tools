@@ -1,4 +1,4 @@
-package net.shiroka.tools.ofx
+package net.shiroka.tools.ofx.conversions
 
 import java.io._
 import scala.io.Source
@@ -8,11 +8,12 @@ import org.joda.time._
 import org.joda.time.format._
 import com.typesafe.config.Config
 import net.shiroka.tools.ofx.aws.S3
+import net.shiroka.tools.ofx._
 import Transaction._
 import Implicits.{ ReducePairs, Tapper }
 
-case class ShinseiBankConversion(config: Config) extends Conversion {
-  import ShinseiBankConversion._
+case class ShinseiBank(config: Config) extends Conversion {
+  import ShinseiBank._
   lazy val accountNumber = config.getLong("account-number")
 
   def apply(
@@ -64,7 +65,7 @@ case class ShinseiBankConversion(config: Config) extends Conversion {
     }
 }
 
-object ShinseiBankConversion {
+object ShinseiBank {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
 }
