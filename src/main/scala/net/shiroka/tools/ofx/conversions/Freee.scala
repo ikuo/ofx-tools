@@ -16,8 +16,8 @@ import Transaction._
 import Implicits.Tapper
 
 // A conversion for transfers.csv of freee https://www.freee.co.jp/
-case class Freee(config: Config) extends Conversion {
-  import Freee._
+case class FreeeTransfers(config: Config) extends Conversion {
+  import FreeeTransfers._
   lazy val accounts = config.as[Config]("accounts")
   val currencyCode = config.as[String]("currency-code")
 
@@ -80,7 +80,7 @@ case class Freee(config: Config) extends Conversion {
     }
 }
 
-object Freee {
+object FreeeTransfers {
   val header = "振替日, 振替元口座, 振替先口座, 備考, 金額".split(", ").toList
   val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
 }
