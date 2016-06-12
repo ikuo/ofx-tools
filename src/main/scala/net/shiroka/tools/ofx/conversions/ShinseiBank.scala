@@ -17,20 +17,17 @@ case class ShinseiBank(config: Config) extends Conversion {
   lazy val accountNumber = config.getLong("account-number")
 
   def apply(
-    sources: List[InputStream],
-    sinks: Option[String] => PrintStream
+    source: InputStream,
+    sink: PrintStream
   ): Result = {
-    val sink = sinks(Default)
-    val (csvs, transactions) = sources
-      .map(src => CSVReader.open(Source.fromInputStream(src, "UTF-16"))(tsvFormat))
-      .map(csv => (csv, read(csv.iterator.dropWhile(_ != header).drop(1))))
-      .reducePairs
+    val csv = CSVReader.open(Source.fromInputStream(source, "UTF-16"))(tsvFormat)
+    lazy val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
 
-    closing(csvs)(_ =>
+    closing(csv)(_ =>
       Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
         .writeOfx(sink))
 
-    sink :: sources
+    sink :: source :: Nil
   }
 
   private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {

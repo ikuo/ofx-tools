@@ -9,18 +9,11 @@ import Implicits.Tapper
 trait Conversion {
   type Result = List[Closeable]
   val config: Config
-  val Default: Option[String] = None
 
-  def apply(sources: List[InputStream], sinks: (Option[String]) => PrintStream): Result
-
-  def apply(sources: List[InputStream], sink: PrintStream): Result =
-    apply(sources, (_ => sink))
-
-  def apply(source: InputStream, sink: PrintStream): Result =
-    apply(List(source), sink)
+  def apply(source: InputStream, sink: PrintStream): Result
 
   def apply(source: InputStream, sink: OutputStream): Result =
-    apply(List(source), new PrintStream(sink, true, "UTF-8"))
+    apply(source, new PrintStream(sink, true, "UTF-8"))
 
   def apply(source: InputStream, sink: String): Result =
     closing(new FileOutputStream(new File(sink)))(apply(source, _))
@@ -28,10 +21,8 @@ trait Conversion {
   def apply(source: String, sink: String): Result =
     closing(new FileInputStream(new File(source)))(apply(_, sink))
 
-  def apply(sources: List[InputStream]): String =
-    printToBaos(out => apply(sources, out)).toString
-
-  def apply(source: InputStream): String = apply(List(source))
+  def apply(source: InputStream): String =
+    printToBaos(out => apply(source, out)).toString
 
   def moneyOpt(str: String): Option[BigDecimal] =
     try {
@@ -52,16 +43,16 @@ object Conversion {
     lazy val sourceFileSuffix = conversion.config.getString("source-file-suffix")
 
     def conversionWithSrc[T](uri: Uri) =
-      conversion(List(s3.source(uri)), _: Option[String] => PrintStream)
+      conversion(s3.source(uri), _: PrintStream)
 
     def apply(args: List[String]) = args match {
       case s3uri :: "-" :: Nil =>
         val uri = Uri.parse(s3uri)
-        conversionWithSrc(uri)(_ => System.out).tap(closeAll)
+        conversionWithSrc(uri)(System.out).tap(closeAll)
 
       case s3uri :: Nil =>
         val uri = Uri.parse(s3uri)
-        printToBaos(out => conversionWithSrc(uri)(_ => out).tap(closeAll))
+        printToBaos(out => conversionWithSrc(uri)(out).tap(closeAll))
           .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
 
       case src :: sink :: Nil =>
