@@ -42,7 +42,7 @@ object Conversion {
   ) {
     lazy val sourceFileSuffix = conversion.config.getString("source-file-suffix")
 
-    def conversionWithSrc[T](uri: Uri) =
+    def conversionWithSrc(uri: Uri) =
       conversion(s3.source(uri), _: PrintStream)
 
     def apply(args: List[String]) = args match {

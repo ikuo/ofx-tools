@@ -1,6 +1,5 @@
 package net.shiroka.tools.ofx.aws
 
-import java.io._
 import scala.util.control.Exception.allCatch
 import com.amazonaws.services.lambda.runtime.{ Context, LambdaLogger }
 import com.typesafe.config.ConfigFactory

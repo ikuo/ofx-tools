@@ -7,7 +7,6 @@ import com.github.tototoshi.csv._
 import org.joda.time._
 import org.joda.time.format._
 import com.typesafe.config.Config
-import net.shiroka.tools.ofx.aws.S3
 import net.shiroka.tools.ofx._
 import Transaction._
 import Implicits.Tapper

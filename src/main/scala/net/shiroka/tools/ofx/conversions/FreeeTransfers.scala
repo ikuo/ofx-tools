@@ -40,20 +40,22 @@ case class FreeeTransfers(config: Config) extends Conversion {
 
     for (row <- rows) row.toList match {
       case row @ date :: from :: to :: desc :: amountStr :: Nil =>
-        accTypes.getOrElseUpdate(from, findOrGuess(from))
-        transactionGroups
-          .getOrElseUpdate(from, ArrayBuffer.empty[Transaction])
-          .append {
-            val (_type, amount) = typeAndAmount(accTypes(from), amountStr)
-            Transaction(
-              dateTime = DateTime.parse(s"$date +09:00", dateFormat),
-              `type` = _type,
-              description = noneIfEmpty(desc).getOrElse(s"$from → $to"),
-              amount = amount,
-              balance = 0
-            ).uniquifyTime(lastTxn.map(_.dateTime))
-              .tap(txn => lastTxn = Some(txn))
-          }
+        allCatch.either {
+          accTypes.getOrElseUpdate(from, findOrGuess(from))
+          transactionGroups
+            .getOrElseUpdate(from, ArrayBuffer.empty[Transaction])
+            .append {
+              val (_type, amount) = typeAndAmount(accTypes(from), amountStr)
+              Transaction(
+                dateTime = DateTime.parse(s"$date +09:00", dateFormat),
+                `type` = _type,
+                description = noneIfEmpty(desc).getOrElse(s"$from → $to"),
+                amount = amount,
+                balance = 0
+              ).uniquifyTime(lastTxn.map(_.dateTime))
+                .tap(txn => lastTxn = Some(txn))
+            }
+        }.fold(rethrow(_, s"Failed process row $row"), identity)
       case row => sys.error(s"Malformed row $row")
     }
 

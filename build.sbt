@@ -21,4 +21,6 @@ libraryDependencies ++=
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
+scalacOptions ++= Seq("-Xlint", "-Ywarn-unused-import", "-unchecked", "-deprecation", "-feature")
+
 fork in run := true
