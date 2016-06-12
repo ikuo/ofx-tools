@@ -10,7 +10,7 @@ import com.typesafe.config.Config
 import net.shiroka.tools.ofx.aws.S3
 import net.shiroka.tools.ofx._
 import Transaction._
-import Implicits.{ ReducePairs, Tapper }
+import Implicits.Tapper
 
 case class ShinseiBank(config: Config) extends Conversion {
   import ShinseiBank._
@@ -24,7 +24,7 @@ case class ShinseiBank(config: Config) extends Conversion {
     lazy val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
 
     closing(csv)(_ =>
-      Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
+      Statement(accountNumber, Statement.Savings, "JPY", transactions)
         .wrap
         .writeOfx(sink))
 
@@ -33,7 +33,6 @@ case class ShinseiBank(config: Config) extends Conversion {
 
   private def read(rows: Iterator[Seq[String]]): Iterator[Transaction] = {
     var lastTxn: Option[Transaction] = None
-    val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
     rows.map(_.toList match {
       case row @ date :: inqNum :: desc :: debitStr :: creditStr :: balanceStr :: Nil =>
         allCatch.either {
@@ -66,4 +65,5 @@ case class ShinseiBank(config: Config) extends Conversion {
 object ShinseiBank {
   val tsvFormat = new TSVFormat {}
   val header = "取引日, 照会番号, 摘要, お支払金額, お預り金額, 残高".split(", ").toList
+  val dateFormat = DateTimeFormat.forPattern("yyyy/MM/dd Z")
 }

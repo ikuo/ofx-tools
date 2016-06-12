@@ -1,16 +1,17 @@
 package net.shiroka.tools.ofx
 
-import Statement._
 import java.io._
+import com.typesafe.config.Config
+import net.ceedubs.ficus.Ficus._
+import Statement._
 
 case class Statement(
-    instituteName: String,
     accountNumber: Long,
     accountType: AccountType,
     currencyCode: String,
     transactions: Iterator[Transaction] // assume descending order by date time
 ) {
-  lazy val ofxKeyPrefix = List(instituteName, accountNumber).mkString(":")
+  lazy val ofxKeyPrefix = accountNumber.toString
 
   def wrap: Message = Message(List(this))
 
@@ -52,4 +53,16 @@ case class Statement(
 object Statement {
   sealed abstract class AccountType(val name: String)
   object Savings extends AccountType("SAVINGS")
+  object Checking extends AccountType("CHECKING")
+  object MoneyMarket extends AccountType("MONEYMRKT")
+  object CreditLine extends AccountType("CREDITLINE")
+
+  object AccountType {
+    val byName = Map(List(Savings, Checking, MoneyMarket, CreditLine).map(t => t.name -> t): _*)
+    def find(config: Config, name: String): Option[AccountType] =
+      for {
+        tp <- config.as[Option[String]](s"accounts.$name.type")
+        accType <- byName.get(tp)
+      } yield accType
+  }
 }
