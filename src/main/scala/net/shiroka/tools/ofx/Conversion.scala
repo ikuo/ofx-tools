@@ -4,7 +4,7 @@ import java.io._
 import com.typesafe.config.Config
 import com.netaporter.uri.Uri
 import net.shiroka.tools.ofx.aws.S3
-import Implicits.Tapper
+import implicits.Tapper
 
 trait Conversion {
   type Result = List[Closeable]

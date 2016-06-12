@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.transfer._
 import com.netaporter.uri.Uri
 import com.typesafe.config.ConfigFactory
-import net.shiroka.tools.ofx.Implicits.Tapper
+import net.shiroka.tools.ofx.implicits.Tapper
 import net.shiroka.tools.ofx._
 
 case class S3() {

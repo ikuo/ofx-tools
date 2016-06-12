@@ -9,7 +9,7 @@ import org.joda.time.format._
 import com.typesafe.config.Config
 import net.shiroka.tools.ofx._
 import Transaction._
-import Implicits.Tapper
+import implicits.Tapper
 
 case class ShinseiBank(config: Config) extends Conversion {
   import ShinseiBank._

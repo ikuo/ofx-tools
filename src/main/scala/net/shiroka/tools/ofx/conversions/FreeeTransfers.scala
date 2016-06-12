@@ -13,7 +13,7 @@ import com.typesafe.config.Config
 import net.shiroka.tools.ofx._
 import Statement._
 import Transaction._
-import Implicits.Tapper
+import implicits.Tapper
 
 // A conversion for transfers.csv of freee https://www.freee.co.jp/
 case class FreeeTransfers(config: Config) extends Conversion {
