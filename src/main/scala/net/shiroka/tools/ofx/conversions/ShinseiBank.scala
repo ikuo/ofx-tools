@@ -25,6 +25,7 @@ case class ShinseiBank(config: Config) extends Conversion {
 
     closing(csv)(_ =>
       Statement("ShinseiBank", accountNumber, Statement.Savings, "JPY", transactions)
+        .wrap
         .writeOfx(sink))
 
     sink :: source :: Nil

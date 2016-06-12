@@ -12,12 +12,11 @@ case class Statement(
 ) {
   lazy val ofxKeyPrefix = List(instituteName, accountNumber).mkString(":")
 
+  def wrap: Message = Message(List(this))
+
   def writeOfx(sink: PrintStream) = {
     var first: Option[Transaction] = None
-    sink.println("ENCODING:UTF-8")
     sink.println(s"""
-<OFX>
-  <BANKMSGSRSV1>
     <STMTTRNRS>
       <STMTRS>
         <CURDEF>$currencyCode</CURDEF>
@@ -46,9 +45,7 @@ case class Statement(
           <DTASOF>$dateTime</DTASOF>
         </AVAILBAL>
       </STMTRS>
-    </STMTTRNRS>
-  </BANKMSGSRSV1>
-</OFX>""")
+    </STMTTRNRS>""")
   }
 }
 
