@@ -1,9 +1,7 @@
 package net.shiroka.tools.ofx.conversions
 
-import java.io._
 import com.typesafe.config.ConfigFactory
 import org.specs2.mutable._
-import org.specs2.specification.Scope
 import net.shiroka.tools.ofx._
 
 class ShinseiBankSpec extends SpecificationLike {
