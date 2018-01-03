@@ -1,8 +1,10 @@
+enablePlugins(SbtProguard)
+
 lazy val root = (project in file(".")).
   settings(
     name := "ofx-tools",
     organization := "net.shiroka",
-    version := "1.1.0",
+    version := "1.2.1",
     scalaVersion := "2.11.8",
     libraryDependencies ++=
       Seq(
@@ -25,21 +27,16 @@ lazy val root = (project in file(".")).
 
 lazy val ficusSettings = Seq(
     resolvers += Resolver.jcenterRepo,
-    // for Scala 2.11.x and Java 7
     libraryDependencies += "com.iheart" %% "ficus" % "1.1.3"
   )
 
-lazy val _proguardSettings = {
-  import com.typesafe.sbt.SbtProguard.ProguardKeys._
-  proguardSettings ++ Seq(
+lazy val _proguardSettings =
+  Seq(
     javaOptions in (Proguard, proguard) := Seq("-Xmx4G"),
-    scalacOptions += "-target:jvm-1.7",
-    ProguardKeys.merge in Proguard := true,
-    ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r),
-    ProguardKeys.mergeStrategies in Proguard += ProguardMerge.append("reference.conf"),
-    ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings"),
-    ProguardKeys.options in Proguard += ProguardOptions.keepMain("net.shiroka.tools.ofx.*"),
-    ProguardKeys.options in Proguard += """
+    scalacOptions += "-target:jvm-1.8",
+    proguardOptions in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings"),
+    proguardOptions in Proguard += ProguardOptions.keepMain("net.shiroka.tools.ofx.*"),
+    proguardOptions in Proguard += """
     -dontoptimize
     -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
     -keepnames class ** { *; }
@@ -59,6 +56,8 @@ lazy val _proguardSettings = {
 
     -keep public class net.shiroka.tools.ofx.aws.Lambda { *; }
     -keep public class ** extends net.shiroka.tools.ofx.Conversion { *; }
-    """
+    """,
+    proguardMerge in Proguard := true,
+    proguardMergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r),
+    proguardMergeStrategies in Proguard += ProguardMerge.append("reference.conf")
   )
-}

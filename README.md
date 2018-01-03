@@ -33,7 +33,8 @@ Prepare src/main/resources/application.conf to override config if any.
 To reduce jar size, run proguard as follows (assuming `brew versions` environment in Mac OS):
 
 ```
-JAVA_HOME=$(/usr/libexec/java_home -v 1.7) sbt
+$ rm -rf ./project/target ./target
+JAVA_HOME=$(/usr/libexec/java_home -v 1.8) sbt
 sbt> proguard:proguard
 ```
 
