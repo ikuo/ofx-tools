@@ -52,7 +52,7 @@ case class FreeeTransfers(config: Config) extends Conversion {
                 description = noneIfEmpty(desc).getOrElse(s"$from → $to"),
                 amount = amount,
                 balance = 0
-              ).uniquifyTime(lastTxn.map(_.dateTime))
+              ).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
                 .tap(txn => lastTxn = Some(txn))
             }
         }.fold(rethrow(_, s"Failed process row $row"), identity)

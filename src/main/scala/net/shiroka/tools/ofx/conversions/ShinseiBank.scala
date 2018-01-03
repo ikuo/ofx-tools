@@ -43,7 +43,7 @@ case class ShinseiBank(config: Config) extends Conversion {
             description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
             amount = amount,
             balance = money(balanceStr)
-          ).uniquifyTime(lastTxn.map(_.dateTime))
+          ).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
             .tap(txn => lastTxn = Some(txn))
 
         }.fold(rethrow(_, s"Failed process row $row"), identity)

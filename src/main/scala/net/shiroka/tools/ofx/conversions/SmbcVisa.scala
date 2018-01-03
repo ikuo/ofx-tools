@@ -37,14 +37,14 @@ case class SmbcVisa(config: Config) extends Conversion {
             description = List(desc, details.replaceAll("　", " / ")).filter(_.nonEmpty).mkString("; "),
             amount = amount,
             balance = dummyZero
-          ).uniquifyTime(state.lastTxn.map(_.dateTime))
+          ).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
           read(state.addTxn(txn))(rows)
 
         case hd :: _ :: _ :: _ :: _ :: Digits(total) :: _ if (hd.isEmpty) =>
           read(state)(rows)
 
         case name :: cardNr :: cardKind :: _ if (name.nonEmpty && cardNr.nonEmpty) =>
-          read(state.setCardName(name))(rows)
+          read(state.initCard(name))(rows)
 
         case row if row.nonEmpty => sys.error(s"${row.size} Malformed row $row in state: $state")
         case row => read(state)(rows)
@@ -64,7 +64,7 @@ object SmbcVisa {
       lastTxn: Option[Transaction],
       cardName: Option[String]
   ) {
-    def setCardName(n: String) = copy(cardName = Some(n))
+    def initCard(name: String) = copy(cardName = Some(name), lastTxn = None)
     def addTxn(txn: Transaction) = copy(
       memo = memo ++ Iterator(txn),
       lastTxn = Some(txn)
