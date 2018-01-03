@@ -29,22 +29,22 @@ case class SmbcVisa(config: Config) extends Conversion {
     if (rows.hasNext) {
       var cardName: Option[String] = None
       rows.next.toList match {
-        case Date(year, month, day) :: desc :: expense :: payCategory :: count :: payment :: details :: _ =>
+        case date(year, month, day) :: desc :: expense :: payCategory :: count :: payment :: details :: _ =>
           val (_type, amount) = typeAndAmount(BigDecimal(expense))
           val txn = Transaction(
             dateTime = new DateTime(year.toInt, month.toInt, day.toInt, 0, 0),
             `type` = _type,
-            description = List(desc, details.replaceAll("　", " / ")).filter(_.nonEmpty).mkString("; "),
+            description = makeDescription(state, desc, details),
             amount = amount,
             balance = dummyZero
-          ).uniquifyTime(state.lastTxn.map(_.dateTime))
+          ).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
           read(state.addTxn(txn))(rows)
 
-        case hd :: _ :: _ :: _ :: _ :: Digits(total) :: _ if (hd.isEmpty) =>
+        case hd :: _ :: _ :: _ :: _ :: digits(total) :: _ if (hd.isEmpty) =>
           read(state)(rows)
 
         case name :: cardNr :: cardKind :: _ if (name.nonEmpty && cardNr.nonEmpty) =>
-          read(state.setCardName(name))(rows)
+          read(state.initCard(name))(rows)
 
         case row if row.nonEmpty => sys.error(s"${row.size} Malformed row $row in state: $state")
         case row => read(state)(rows)
@@ -52,11 +52,19 @@ case class SmbcVisa(config: Config) extends Conversion {
     } else state
 
   private def typeAndAmount(amount: BigDecimal): (Type, BigDecimal) = (Credit, -amount)
+
+  private def makeDescription(state: State, desc: String, details: String): String = {
+    List(
+      state.cardName.map(_.replaceAll("(　|様$)", "")).getOrElse(""),
+      desc,
+      details.replaceAll("　", " / ")
+    ).filter(_.nonEmpty).mkString("; ")
+  }
 }
 
 object SmbcVisa {
-  val Digits = "(\\d+)".r
-  val Date = """(\d\d\d\d)/(\d\d)/(\d\d)""".r
+  val digits = "(\\d+)".r
+  val date = """(\d\d\d\d)/(\d\d)/(\d\d)""".r
   val dummyZero = BigDecimal(0)
 
   case class State(
@@ -64,7 +72,7 @@ object SmbcVisa {
       lastTxn: Option[Transaction],
       cardName: Option[String]
   ) {
-    def setCardName(n: String) = copy(cardName = Some(n))
+    def initCard(name: String) = copy(cardName = Some(name), lastTxn = None)
     def addTxn(txn: Transaction) = copy(
       memo = memo ++ Iterator(txn),
       lastTxn = Some(txn)

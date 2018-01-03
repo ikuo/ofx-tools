@@ -15,14 +15,22 @@ case class Transaction(
     balance: BigDecimal
 ) {
   lazy val date: DateTime = dateBase(dateTime)
-  lazy val moveToLastMinuteOfTheDay = copy(dateTime = dateTime.plusDays(1).minusMinutes(1))
+  lazy val moveToLastMinuteOfTheDay = copy(dateTime = date.plusDays(1).minusMinutes(1))
   lazy val dateTimeOfx = dateTime.toString(ofxDateFormat)
 
-  def uniquifyTime(previousOpt: Option[DateTime]) = previousOpt match {
-    case None => moveToLastMinuteOfTheDay
-    case Some(previous) if (date != dateBase(previous)) => moveToLastMinuteOfTheDay
-    case Some(previous) => copy(dateTime = previous.minusMinutes(1))
-  }
+  def uniquifyTime(previousOpt: Option[DateTime], ascending: Boolean): Transaction =
+    if (ascending)
+      previousOpt match {
+        case None => copy(dateTime = date)
+        case Some(previous) if (date != dateBase(previous)) => copy(dateTime = date)
+        case Some(previous) => copy(dateTime = previous.plusMinutes(1))
+      }
+    else
+      previousOpt match {
+        case None => moveToLastMinuteOfTheDay
+        case Some(previous) if (date != dateBase(previous)) => moveToLastMinuteOfTheDay
+        case Some(previous) => copy(dateTime = previous.minusMinutes(1))
+      }
 
   def writeOfx(sink: PrintStream, ofxKeyPrefix: String = ""): Unit = {
     sink.print(ppXml.format(
