@@ -15,6 +15,7 @@ class SmbcVisaSpec extends SpecificationLike {
         result must contain("<ACCTID>1001000301</ACCTID>")
         result must contain("<STMTTRN>")
         result must contain("<MEMO>ＮＨＫ　放送受信料; ＮＨＫ２９ネン１２ガツ—３０ネン / １ガツ</MEMO>")
+        result must contain("<MEMO>イロハバンクＭ（１１月分）</MEMO>")
       }
     }
   }

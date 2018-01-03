@@ -40,13 +40,14 @@ case class SmbcVisa(config: Config) extends Conversion {
           ).uniquifyTime(state.lastTxn.map(_.dateTime))
           read(state.addTxn(txn))(rows)
 
-        case hd :: _ :: _ :: _ :: _ :: Digits(total) :: _ if (hd.isEmpty) => state
+        case hd :: _ :: _ :: _ :: _ :: Digits(total) :: _ if (hd.isEmpty) =>
+          read(state)(rows)
 
         case name :: cardNr :: cardKind :: _ if (name.nonEmpty && cardNr.nonEmpty) =>
           read(state.setCardName(name))(rows)
 
         case row if row.nonEmpty => sys.error(s"${row.size} Malformed row $row in state: $state")
-        case row => state
+        case row => read(state)(rows)
       }
     } else state
 
