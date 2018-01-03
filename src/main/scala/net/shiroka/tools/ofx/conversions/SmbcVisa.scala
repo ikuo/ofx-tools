@@ -34,7 +34,7 @@ case class SmbcVisa(config: Config) extends Conversion {
           val txn = Transaction(
             dateTime = new DateTime(year.toInt, month.toInt, day.toInt, 0, 0),
             `type` = _type,
-            description = List(desc, details.replaceAll("　", " / ")).filter(_.nonEmpty).mkString("; "),
+            description = makeDescription(state, desc, details),
             amount = amount,
             balance = dummyZero
           ).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
@@ -52,6 +52,14 @@ case class SmbcVisa(config: Config) extends Conversion {
     } else state
 
   private def typeAndAmount(amount: BigDecimal): (Type, BigDecimal) = (Credit, -amount)
+
+  private def makeDescription(state: State, desc: String, details: String): String = {
+    List(
+      state.cardName.map(_.replaceAll("(　|様$)", "")).getOrElse(""),
+      desc,
+      details.replaceAll("　", " / ")
+    ).filter(_.nonEmpty).mkString("; ")
+  }
 }
 
 object SmbcVisa {
