@@ -29,7 +29,7 @@ case class SmbcVisa(config: Config) extends Conversion {
     if (rows.hasNext) {
       var cardName: Option[String] = None
       rows.next.toList match {
-        case Date(year, month, day) :: desc :: expense :: payCategory :: count :: payment :: details :: _ =>
+        case date(year, month, day) :: desc :: expense :: payCategory :: count :: payment :: details :: _ =>
           val (_type, amount) = typeAndAmount(BigDecimal(expense))
           val txn = Transaction(
             dateTime = new DateTime(year.toInt, month.toInt, day.toInt, 0, 0),
@@ -40,7 +40,7 @@ case class SmbcVisa(config: Config) extends Conversion {
           ).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
           read(state.addTxn(txn))(rows)
 
-        case hd :: _ :: _ :: _ :: _ :: Digits(total) :: _ if (hd.isEmpty) =>
+        case hd :: _ :: _ :: _ :: _ :: digits(total) :: _ if (hd.isEmpty) =>
           read(state)(rows)
 
         case name :: cardNr :: cardKind :: _ if (name.nonEmpty && cardNr.nonEmpty) =>
@@ -55,8 +55,8 @@ case class SmbcVisa(config: Config) extends Conversion {
 }
 
 object SmbcVisa {
-  val Digits = "(\\d+)".r
-  val Date = """(\d\d\d\d)/(\d\d)/(\d\d)""".r
+  val digits = "(\\d+)".r
+  val date = """(\d\d\d\d)/(\d\d)/(\d\d)""".r
   val dummyZero = BigDecimal(0)
 
   case class State(
