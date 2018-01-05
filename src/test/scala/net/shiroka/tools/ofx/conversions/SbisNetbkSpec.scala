@@ -14,6 +14,7 @@ class SbisNetbkSpec extends SpecificationLike {
         val result = printToBaos(out => conversion(src, out)).toString
         result must contain("<ACCTID>1001000400</ACCTID>")
         result must contain("<STMTTRN>")
+        result must contain("<MEMO>振込＊テイガクジドウニユウキン</MEMO>")
       }
     }
   }
