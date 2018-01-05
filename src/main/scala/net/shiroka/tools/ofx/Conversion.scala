@@ -46,11 +46,11 @@ object Conversion {
       conversion(s3.source(uri), _: PrintStream)
 
     def apply(args: List[String]) = args match {
-      case s3uri :: "-" :: Nil =>
+      case s3uri :: "-" :: Nil if s3uri.startsWith("s3://") =>
         val uri = Uri.parse(s3uri)
         conversionWithSrc(uri)(System.out).tap(closeAll)
 
-      case s3uri :: Nil =>
+      case s3uri :: Nil if s3uri.startsWith("s3://") =>
         val uri = Uri.parse(s3uri)
         printToBaos(out => conversionWithSrc(uri)(out).tap(closeAll))
           .tap(s3.uploadAndAwait(uri, sourceFileSuffix, _))
