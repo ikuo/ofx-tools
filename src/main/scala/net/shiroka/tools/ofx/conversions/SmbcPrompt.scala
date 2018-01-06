@@ -35,7 +35,7 @@ case class SmbcPrompt(config: Config) extends Conversion {
             dateTime = new DateTime(year.toInt, month.toInt, day.toInt, 0, 0),
             `type` = Credit,
             description = makeDescription(name, desc),
-            amount = BigDecimal(amount),
+            amount = -BigDecimal(amount),
             balance = BigDecimal(0) // dummy
           )
         }.fold(rethrow(_, s"Failed process row $row"), identity)
