@@ -4,7 +4,7 @@ lazy val root = (project in file(".")).
   settings(
     name := "ofx-tools",
     organization := "net.shiroka",
-    version := "1.3.1",
+    version := "1.3.2",
     scalaVersion := "2.11.8",
     libraryDependencies ++=
       Seq(
