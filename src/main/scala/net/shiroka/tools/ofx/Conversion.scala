@@ -36,10 +36,9 @@ trait Conversion {
 
 object Conversion {
   case class Cli[T <: Conversion](
-      conversionName: String,
-      conversion: Conversion,
-      s3: S3
-  ) {
+    conversionName: String,
+    conversion: Conversion,
+    s3: S3) {
     lazy val sourceFileSuffix = conversion.config.getString("source-file-suffix")
 
     def conversionWithSrc(uri: Uri) =

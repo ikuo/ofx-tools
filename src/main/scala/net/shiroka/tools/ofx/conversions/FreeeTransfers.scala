@@ -23,8 +23,7 @@ case class FreeeTransfers(config: Config) extends Conversion {
 
   def apply(
     source: InputStream,
-    sink: PrintStream
-  ): Result = {
+    sink: PrintStream): Result = {
     val csv = CSVReader.open(Source.fromInputStream(source, "Shift_JIS"))
     val statements = read(csv.iterator.drop(1))
 
@@ -51,8 +50,7 @@ case class FreeeTransfers(config: Config) extends Conversion {
                 `type` = _type,
                 description = noneIfEmpty(desc).getOrElse(s"$from → $to"),
                 amount = amount,
-                balance = 0
-              ).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
+                balance = 0).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
                 .tap(txn => lastTxn = Some(txn))
             }
         }.fold(rethrow(_, s"Failed process row $row"), identity)
@@ -65,8 +63,7 @@ case class FreeeTransfers(config: Config) extends Conversion {
           accounts.as[Option[String]](s"$name.account-id").getOrElse(name),
           accTypes(name),
           currencyCode,
-          transactions.iterator
-        )
+          transactions.iterator)
     }
   }
 

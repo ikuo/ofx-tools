@@ -6,10 +6,10 @@ import net.ceedubs.ficus.Ficus._
 import Statement._
 
 case class Statement(
-    accountId: String,
-    accountType: AccountType,
-    currencyCode: String,
-    transactions: Iterator[Transaction] // assume descending order by date time
+  accountId: String,
+  accountType: AccountType,
+  currencyCode: String,
+  transactions: Iterator[Transaction] // assume descending order by date time
 ) {
   lazy val ofxKeyPrefix = accountId.toString
 

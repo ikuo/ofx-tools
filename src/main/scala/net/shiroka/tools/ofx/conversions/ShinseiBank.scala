@@ -17,8 +17,7 @@ case class ShinseiBank(config: Config) extends Conversion {
 
   def apply(
     source: InputStream,
-    sink: PrintStream
-  ): Result = {
+    sink: PrintStream): Result = {
     val csv = CSVReader.open(Source.fromInputStream(source, "UTF-16"))(tsvFormat)
     lazy val transactions = read(csv.iterator.dropWhile(_ != header).drop(1))
 
@@ -42,8 +41,7 @@ case class ShinseiBank(config: Config) extends Conversion {
             `type` = _type,
             description = List(Some(desc.trim), noneIfEmpty(inqNum)).flatten.mkString(" #"),
             amount = amount,
-            balance = money(balanceStr)
-          ).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
+            balance = money(balanceStr)).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
             .tap(txn => lastTxn = Some(txn))
 
         }.fold(rethrow(_, s"Failed process row $row"), identity)

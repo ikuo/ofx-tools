@@ -19,8 +19,7 @@ case class GnucashExport(config: Config) extends Conversion {
 
   def apply(
     source: InputStream,
-    sink: PrintStream
-  ): Result = {
+    sink: PrintStream): Result = {
     val csv = CSVReader.open(Source.fromInputStream(source, "UTF-8"))
     val rows = csv.iterator.tap(it => assertHeader(it.next()))
     lazy val transactions = read(rows)

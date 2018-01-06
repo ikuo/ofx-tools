@@ -30,8 +30,7 @@ case class S3() {
         bucket = originalUri.host.get,
         key = originalUri.path.drop(1).stripSuffix(suffix) ++ "ofx",
         is = new ByteArrayInputStream(baos.toByteArray),
-        size = baos.size
-      )
+        size = baos.size)
     }
 
   def uploadAndAwait(originalUri: Uri, suffix: String, baos: ByteArrayOutputStream): Unit =
@@ -39,8 +38,7 @@ case class S3() {
       bucket = originalUri.host.get,
       key = originalUri.path.drop(1).stripSuffix(suffix) ++ "ofx",
       is = new ByteArrayInputStream(baos.toByteArray),
-      size = baos.size
-    )
+      size = baos.size)
 
   def uploadAndAwait(bucket: String, key: String, is: InputStream, size: Int): Unit =
     new TransferManager(client).tap { transfer =>
@@ -49,8 +47,7 @@ case class S3() {
           bucket,
           key,
           is,
-          new ObjectMetadata().tap(_.setContentLength(size))
-        ).waitForCompletion
+          new ObjectMetadata().tap(_.setContentLength(size))).waitForCompletion
       }.fold(err => throw new IOException(err), identity)
     }.shutdownNow()
 }

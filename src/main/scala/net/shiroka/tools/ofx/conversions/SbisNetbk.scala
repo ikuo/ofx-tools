@@ -17,8 +17,7 @@ case class SbisNetbk(config: Config) extends Conversion {
 
   def apply(
     source: InputStream,
-    sink: PrintStream
-  ): Result = {
+    sink: PrintStream): Result = {
     val csv = CSVReader.open(Source.fromInputStream(source, "Shift_JIS"))
     val rows = csv.iterator.tap(it => assertHeader(it.next()))
     lazy val transactions = read(rows)
@@ -46,8 +45,7 @@ case class SbisNetbk(config: Config) extends Conversion {
             `type` = _type,
             description = List(Some(desc.trim)).flatten.mkString(" #"),
             amount = amount,
-            balance = money(balanceStr)
-          ).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
+            balance = money(balanceStr)).uniquifyTime(lastTxn.map(_.dateTime), ascending = false)
             .tap(txn => lastTxn = Some(txn))
 
         }.fold(rethrow(_, s"Failed process row $row"), identity)

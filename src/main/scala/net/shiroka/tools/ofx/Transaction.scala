@@ -8,12 +8,11 @@ import org.joda.time.format._
 import Transaction._
 
 case class Transaction(
-    dateTime: DateTime,
-    `type`: Type,
-    description: String,
-    amount: BigDecimal,
-    balance: BigDecimal
-) {
+  dateTime: DateTime,
+  `type`: Type,
+  description: String,
+  amount: BigDecimal,
+  balance: BigDecimal) {
   lazy val date: DateTime = dateBase(dateTime)
   lazy val moveToLastMinuteOfTheDay = copy(dateTime = date.plusDays(1).minusMinutes(1))
   lazy val dateTimeOfx = dateTime.toString(ofxDateFormat)
@@ -40,8 +39,7 @@ case class Transaction(
         <TRNAMT>{ amount }</TRNAMT>
         <FITID>{ ofxId(ofxKeyPrefix) }</FITID>
         <MEMO>{ description }</MEMO>
-      </STMTTRN>
-    ))
+      </STMTTRN>))
   }
 
   def ofxId(prefix: String) = {

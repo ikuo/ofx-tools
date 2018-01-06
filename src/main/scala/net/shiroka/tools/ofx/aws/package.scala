@@ -12,10 +12,8 @@ package object aws {
             new BasicSessionCredentials(
               sys.env("AWS_ACCESS_KEY_ID"),
               sys.env("AWS_SECRET_ACCESS_KEY"),
-              token
-            )
+              token)
           def refresh = Unit;
-        }
-      )
+        })
   }
 }

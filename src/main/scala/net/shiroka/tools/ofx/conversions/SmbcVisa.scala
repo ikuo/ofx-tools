@@ -14,8 +14,7 @@ case class SmbcVisa(config: Config) extends Conversion {
 
   def apply(
     source: InputStream,
-    sink: PrintStream
-  ): Result = {
+    sink: PrintStream): Result = {
     val csv = CSVReader.open(Source.fromInputStream(source, "Shift_JIS"))
     lazy val transactions = read(State.empty)(csv.iterator).memo
     closing(csv)(_ =>
@@ -36,8 +35,7 @@ case class SmbcVisa(config: Config) extends Conversion {
             `type` = _type,
             description = makeDescription(state, desc, details),
             amount = amount,
-            balance = dummyZero
-          ).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
+            balance = dummyZero).uniquifyTime(state.lastTxn.map(_.dateTime), ascending = true)
           read(state.addTxn(txn))(rows)
 
         case hd :: _ :: _ :: _ :: _ :: digits(total) :: _ if (hd.isEmpty) =>
@@ -57,8 +55,7 @@ case class SmbcVisa(config: Config) extends Conversion {
     List(
       state.cardName.map(_.replaceAll("(　|様$)", "")).getOrElse(""),
       desc,
-      details.replaceAll("　", " / ")
-    ).filter(_.nonEmpty).mkString("; ")
+      details.replaceAll("　", " / ")).filter(_.nonEmpty).mkString("; ")
   }
 }
 
@@ -68,15 +65,13 @@ object SmbcVisa {
   val dummyZero = BigDecimal(0)
 
   case class State(
-      memo: Iterator[Transaction],
-      lastTxn: Option[Transaction],
-      cardName: Option[String]
-  ) {
+    memo: Iterator[Transaction],
+    lastTxn: Option[Transaction],
+    cardName: Option[String]) {
     def initCard(name: String) = copy(cardName = Some(name), lastTxn = None)
     def addTxn(txn: Transaction) = copy(
       memo = memo ++ Iterator(txn),
-      lastTxn = Some(txn)
-    )
+      lastTxn = Some(txn))
   }
 
   object State {
