@@ -8,8 +8,8 @@ import com.typesafe.config.Config
 import net.shiroka.tools.ofx._
 import Transaction._
 
-case class SmbcVisa(config: Config) extends Conversion {
-  import SmbcVisa._
+case class SmbcFixed(config: Config) extends Conversion {
+  import SmbcFixed._
   lazy val accountId = config.getString("account-id")
 
   def apply(
@@ -59,7 +59,7 @@ case class SmbcVisa(config: Config) extends Conversion {
   }
 }
 
-object SmbcVisa {
+object SmbcFixed {
   val digits = "(\\d+)".r
   val date = """(\d\d\d\d)/(\d\d)/(\d\d)""".r
   val dummyZero = BigDecimal(0)
