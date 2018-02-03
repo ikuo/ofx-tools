@@ -12,7 +12,7 @@ class SmbcPromptSpec extends SpecificationLike {
         val conversion = SmbcPrompt(config)
         val src = getClass.getResourceAsStream("/smbc-prompt.csv")
         val result = printToBaos(out => conversion(src, out)).toString
-        result must contain("<ACCTID>1001000600</ACCTID>")
+        result must contain("<ACCTID>1001000300</ACCTID>")
         result must contain("<STMTTRN>")
         result must contain("<MEMO>家族; コウオツ店</MEMO>")
         result must contain("<MEMO>本人; ヘイテイ</MEMO>")

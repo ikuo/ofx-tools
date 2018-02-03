@@ -16,6 +16,7 @@ case class Transaction(
   lazy val date: DateTime = dateBase(dateTime)
   lazy val moveToLastMinuteOfTheDay = copy(dateTime = date.plusDays(1).minusMinutes(1))
   lazy val dateTimeOfx = dateTime.toString(ofxDateFormat)
+  lazy val ppXml = new PrettyPrinter(120, 2)
 
   def uniquifyTime(previousOpt: Option[DateTime], ascending: Boolean): Transaction =
     if (ascending)
@@ -50,7 +51,6 @@ case class Transaction(
 
 object Transaction {
   val ofxDateFormat = DateTimeFormat.forPattern("yyyyMMddHHmmss")
-  val ppXml = new PrettyPrinter(120, 2)
 
   sealed abstract class Type(val name: String)
   case object Debit extends Type("DEBIT")
