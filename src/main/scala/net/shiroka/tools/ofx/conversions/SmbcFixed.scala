@@ -29,7 +29,7 @@ case class SmbcFixed(config: Config) extends Conversion {
       var cardName: Option[String] = None
       rows.next.toList match {
         case date(year, month, day) :: desc :: expense :: payCategory :: count :: payment :: details :: _ =>
-          val (_type, amount) = typeAndAmount(BigDecimal(expense))
+          val (_type, amount) = typeAndAmount(BigDecimal(payment))
           val txn = Transaction(
             dateTime = new DateTime(year.toInt, month.toInt, day.toInt, 0, 0),
             `type` = _type,
