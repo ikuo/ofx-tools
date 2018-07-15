@@ -12,6 +12,7 @@ class SbisNetbkSpec extends SpecificationLike {
         val conversion = SbisNetbk(config)
         val src = getClass.getResourceAsStream("/sbis-netbk.csv")
         val result = printToBaos(out => conversion(src, out)).toString
+        result must contain("<DTPOSTED>20180105235900</DTPOSTED>")
         result must contain("<ACCTID>1001000400</ACCTID>")
         result must contain("<STMTTRN>")
         result must contain("<MEMO>振込＊テイガクジドウニユウキン</MEMO>")

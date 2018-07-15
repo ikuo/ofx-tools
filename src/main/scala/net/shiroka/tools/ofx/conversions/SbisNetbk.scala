@@ -14,6 +14,7 @@ import Transaction._
 case class SbisNetbk(config: Config) extends Conversion {
   import SbisNetbk._
   lazy val accountId = config.getString("account-id")
+  val jst = DateTimeZone.forID("Asia/Tokyo")
 
   def apply(
     source: InputStream,
@@ -41,7 +42,7 @@ case class SbisNetbk(config: Config) extends Conversion {
           val (_type, amount) = typeAndAmount(debitStr, creditStr, desc)
 
           Transaction(
-            dateTime = DateTime.parse(s"$date +09:00", dateFormat),
+            dateTime = DateTime.parse(s"$date +09:00", dateFormat).withZone(jst),
             `type` = _type,
             description = List(Some(desc.trim)).flatten.mkString(" #"),
             amount = amount,
