@@ -20,7 +20,8 @@ lazy val root = (project in file(".")).
       ),
     scalacOptions in Test ++= Seq("-Yrangepos"),
     scalacOptions ++= Seq("-Xlint", "-Ywarn-unused-import", "-unchecked", "-deprecation", "-feature"),
-    fork in run := true
+    fork in run := true,
+    javaOptions in run += "-Duser.timezone=UTC"
   )
     .settings(ficusSettings: _*)
     .settings(_proguardSettings: _*)
