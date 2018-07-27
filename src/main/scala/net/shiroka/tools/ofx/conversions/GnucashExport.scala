@@ -59,5 +59,5 @@ case class GnucashExport(config: Config) extends Conversion {
 }
 
 object GnucashExport {
-  val dateFormat = DateTimeFormat.forPattern("yyyyMMddHHmmss Z")
+  val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z")
 }
